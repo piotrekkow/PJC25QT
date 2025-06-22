@@ -18,6 +18,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     // trafficSim = new TrafficSim(this);
     setupSceneView();
+    setupDock();
     setupConnections();
 }
 
@@ -29,7 +30,6 @@ MainWindow::~MainWindow()
 void MainWindow::setupConnections()
 {
     connect(ui->actionExit, &QAction::triggered, this, &QMainWindow::close);
-    setupDock();
 }
 
 void MainWindow::setupDock()
@@ -73,11 +73,13 @@ void MainWindow::setupSceneView()
     text->setDefaultTextColor(Qt::white);
     scene->addItem(text);
 
-    view = new QGraphicsView(scene); // Create a QGraphicsView and associate it with the scene
-    view->setRenderHint(QPainter::Antialiasing); // Optional: for smoother rendering
-    view->setDragMode(QGraphicsView::RubberBandDrag); // Optional: enable selection with rubber band
-    view->setOptimizationFlag(QGraphicsView::DontAdjustForAntialiasing, true); // Performance hint
-
-    setCentralWidget(view);
+    if (ui->graphicsView)
+    {
+        ui->graphicsView->setScene(scene);
+        ui->graphicsView->setRenderHint(QPainter::Antialiasing); // Optional: for smoother rendering
+        // ui->graphicsView->setDragMode(QGraphicsView::RubberBandDrag); // Optional: enable selection with rubber band
+        ui->graphicsView->setOptimizationFlag(QGraphicsView::DontAdjustForAntialiasing, true); // Performance hint
+    }
 }
+
 

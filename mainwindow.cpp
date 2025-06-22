@@ -1,6 +1,12 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 
+#include <QHBoxLayout>
+#include <QGraphicsRectItem>
+#include <QGraphicsLineItem>
+#include <QGraphicsTextItem>
+
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -11,7 +17,7 @@ MainWindow::MainWindow(QWidget *parent)
     resize(1280, 720);
 
     // trafficSim = new TrafficSim(this);
-
+    setupSceneView();
     setupConnections();
 }
 
@@ -28,23 +34,50 @@ void MainWindow::setupConnections()
 
 void MainWindow::setupDock()
 {
-    connect(ui->actionDock, &QAction::triggered, ui->dockWidget->toggleViewAction(), &QAction::trigger);
-    connect(ui->dockWidget, &QDockWidget::visibilityChanged, ui->actionDock, &QAction::setChecked);
+    QAction* dockToggleAction = ui->dockWidget->toggleViewAction();
 
-    ui->actionDock->setCheckable(true);
-    ui->actionDock->setChecked(ui->dockWidget->isVisible());
-    ui->actionDock->setShortcut(ui->dockWidget->toggleViewAction()->shortcut());
-    connect(ui->actionDock, &QAction::triggered, ui->dockWidget, &QWidget::setVisible);
+    if (ui->actionDock) { // Check if ui->actionDock exists (it should from .ui file)
+        dockToggleAction->setText(ui->actionDock->text());
+        dockToggleAction->setShortcut(ui->actionDock->shortcut());
+    }
+    dockToggleAction->setCheckable(true);
 
-    ui->actionDock = ui->dockWidget->toggleViewAction();
-    connect(ui->actionDock, &QAction::triggered, ui->dockWidget, &QWidget::setVisible);
-    connect(ui->dockWidget, &QDockWidget::visibilityChanged, ui->actionDock, &QAction::setChecked);
 
-    ui->actionDock->setChecked(ui->dockWidget->isVisible());
-    connect(ui->actionDock, &QAction::triggered, [this](bool checked){
-        ui->dockWidget->setVisible(checked);
-    });
-
-    connect(ui->dockWidget, &QDockWidget::visibilityChanged, ui->actionDock, &QAction::setChecked);
-    ui->actionDock->setChecked(ui->dockWidget->isVisible());
+    if (ui->menuWindows)
+    {
+        if (ui->actionDock && ui->menuWindows->actions().contains(ui->actionDock))
+        {
+            ui->menuWindows->removeAction(ui->actionDock);
+        }
+        ui->menuWindows->addAction(dockToggleAction);
+    }
 }
+
+void MainWindow::setupSceneView()
+{
+    scene = new QGraphicsScene(this);
+    scene->setBackgroundBrush(QColor("#2c2c2c"));
+
+    QGraphicsRectItem *rect = new QGraphicsRectItem(0, 0, 200, 100);
+    rect->setBrush(QColor("green"));
+    rect->setPen(QPen(Qt::black, 2));
+    rect->setFlag(QGraphicsItem::ItemIsMovable);
+    scene->addItem(rect);
+
+    QGraphicsLineItem *line = new QGraphicsLineItem(50, 50, 250, 150);
+    line->setPen(QPen(Qt::red, 3));
+    scene->addItem(line);
+
+    QGraphicsTextItem *text = new QGraphicsTextItem("Hello, 2D Scene!");
+    text->setPos(10, 100);
+    text->setDefaultTextColor(Qt::white);
+    scene->addItem(text);
+
+    view = new QGraphicsView(scene); // Create a QGraphicsView and associate it with the scene
+    view->setRenderHint(QPainter::Antialiasing); // Optional: for smoother rendering
+    view->setDragMode(QGraphicsView::RubberBandDrag); // Optional: enable selection with rubber band
+    view->setOptimizationFlag(QGraphicsView::DontAdjustForAntialiasing, true); // Performance hint
+
+    setCentralWidget(view);
+}
+

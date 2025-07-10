@@ -5,81 +5,114 @@
 #include <QGraphicsRectItem>
 #include <QGraphicsLineItem>
 #include <QGraphicsTextItem>
+#include <QButtonGroup>
+#include "roadtool.h"
+#include "selecttool.h"
 
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
+    , ui_(new Ui::MainWindow)
 {
-    ui->setupUi(this);
+    ui_->setupUi(this);
 
     setWindowTitle("PJC25");
     resize(1280, 720);
 
     // trafficSim = new TrafficSim(this);
-    setupSceneView();
+    setupScene();
+    setupView();
     setupDock();
+    setupTools();
     setupConnections();
 }
 
 MainWindow::~MainWindow()
 {
-    delete ui;
+    delete ui_;
 }
 
 void MainWindow::setupConnections()
 {
-    connect(ui->actionExit, &QAction::triggered, this, &QMainWindow::close);
+    connect(ui_->actionExit, &QAction::triggered, this, &QMainWindow::close);
+    connect(ui_->actionReset_zoom_and_pan, &QAction::triggered, zoomController_, &GraphicsViewZoom::resetZoom);
 }
 
 void MainWindow::setupDock()
 {
-    QAction* dockToggleAction = ui->dockWidget->toggleViewAction();
+    QAction* dockToggleAction = ui_->dockWidget->toggleViewAction();
 
-    if (ui->actionDock) { // Check if ui->actionDock exists (it should from .ui file)
-        dockToggleAction->setText(ui->actionDock->text());
-        dockToggleAction->setShortcut(ui->actionDock->shortcut());
-    }
+    dockToggleAction->setText(ui_->actionDock->text());
+    dockToggleAction->setShortcut(ui_->actionDock->shortcut());
     dockToggleAction->setCheckable(true);
 
-
-    if (ui->menuWindows)
+    if (ui_->menuWindows)
     {
-        if (ui->actionDock && ui->menuWindows->actions().contains(ui->actionDock))
+        if (ui_->menuWindows->actions().contains(ui_->actionDock))
         {
-            ui->menuWindows->removeAction(ui->actionDock);
+            ui_->menuWindows->removeAction(ui_->actionDock);
         }
-        ui->menuWindows->addAction(dockToggleAction);
+        ui_->menuWindows->addAction(dockToggleAction);
     }
 }
 
-void MainWindow::setupSceneView()
+void MainWindow::setupScene()
 {
-    scene = new QGraphicsScene(this);
-    scene->setBackgroundBrush(QColor("#2c2c2c"));
+    scene_ = new SimulationScene(this);
+    scene_->setBackgroundBrush(QColor("#2c2c2c"));
+
+    qreal huge_dimension = 100000;
+    scene_->setSceneRect(-huge_dimension, -huge_dimension, huge_dimension * 2, huge_dimension * 2);
+
 
     QGraphicsRectItem *rect = new QGraphicsRectItem(0, 0, 200, 100);
     rect->setBrush(QColor("green"));
     rect->setPen(QPen(Qt::black, 2));
     rect->setFlag(QGraphicsItem::ItemIsMovable);
-    scene->addItem(rect);
+    scene_->addItem(rect);
 
     QGraphicsLineItem *line = new QGraphicsLineItem(50, 50, 250, 150);
     line->setPen(QPen(Qt::red, 3));
-    scene->addItem(line);
+    scene_->addItem(line);
 
     QGraphicsTextItem *text = new QGraphicsTextItem("Hello, 2D Scene!");
     text->setPos(10, 100);
     text->setDefaultTextColor(Qt::white);
-    scene->addItem(text);
+    scene_->addItem(text);
+}
 
-    if (ui->graphicsView)
-    {
-        ui->graphicsView->setScene(scene);
-        ui->graphicsView->setRenderHint(QPainter::Antialiasing); // Optional: for smoother rendering
-        // ui->graphicsView->setDragMode(QGraphicsView::RubberBandDrag); // Optional: enable selection with rubber band
-        ui->graphicsView->setOptimizationFlag(QGraphicsView::DontAdjustForAntialiasing, true); // Performance hint
+void MainWindow::setupView()
+{
+    view_ = ui_->graphicsView;
+    zoomController_ = new GraphicsViewZoom(view_);
+
+    view_->setScene(scene_);
+    view_->setRenderHint(QPainter::Antialiasing); // Optional: for smoother rendering
+    view_->setOptimizationFlag(QGraphicsView::DontAdjustForAntialiasing, true); // Performance hint
+
+    view_->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    view_->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+}
+
+void MainWindow::setupTools()
+{
+    QButtonGroup *toolGroup = new QButtonGroup(this);
+    toolGroup->addButton(ui_->selectToolButton);
+    toolGroup->addButton(ui_->roadToolButton);
+    toolGroup->setExclusive(true);
+}
+
+void MainWindow::on_selectToolButton_toggled(bool checked)
+{
+    if (checked) {
+        scene_->setTool(new SelectTool());
     }
 }
 
+void MainWindow::on_roadToolButton_toggled(bool checked)
+{
+    if (checked) {
+        scene_->setTool(new RoadTool());
+    }
+}
 

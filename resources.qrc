@@ -1,0 +1,14 @@
+<RCC>
+    <qresource prefix="/">
+        <file>resources/icon_controller.svg</file>
+        <file>resources/icon_crossing.svg</file>
+        <file>resources/icon_detector.svg</file>
+        <file>resources/icon_generator.svg</file>
+        <file>resources/icon_intersection.svg</file>
+        <file>resources/icon_road.svg</file>
+        <file>resources/icon_roundabout.svg</file>
+        <file>resources/icon_select.svg</file>
+        <file>resources/icon_generator2.svg</file>
+        <file>resources/icon_select2.svg</file>
+    </qresource>
+</RCC>

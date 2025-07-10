@@ -41,6 +41,40 @@
         <height>0</height>
        </size>
       </property>
+      <property name="styleSheet">
+       <string notr="true">QToolButton {
+    icon-size: 24px;
+    min-width: 32px; /* Enforces a minimum width for the button */
+    max-width: 32px; /* Enforces a maximum width */
+    min-height: 32px; /* Enforces a minimum height */
+    max-height: 32px; /* Enforces a maximum height */
+    /* You can also set padding, margin, border, etc. */
+    padding: 0px;
+    border: 1px solid #444444;
+    border-radius: 4px;
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                      stop: 0 #000000, stop: 1 #222222);
+}
+
+QToolButton:hover {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                      stop: 0 #222222, stop: 1 #333333);
+}
+
+QToolButton:checked {
+	background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                      stop: 0 #020024, stop: 1 #007E85);
+}
+
+QWidget {
+	spacing: 8px;
+	margin-top: 0px;
+   margin-bottom: 0px;
+   margin-left: 0px;
+   margin-right: 0px;
+	margin: 0px;
+}</string>
+      </property>
       <property name="tabPosition">
        <enum>QTabWidget::TabPosition::North</enum>
       </property>
@@ -64,34 +98,38 @@
         <string>Network</string>
        </attribute>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
-        <property name="spacing">
-         <number>10</number>
-        </property>
         <item>
-         <widget class="QToolButton" name="roadToolButton">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>18</width>
-            <height>18</height>
-           </size>
-          </property>
-          <property name="toolTip">
-           <string>Place a road</string>
+         <widget class="QToolButton" name="selectToolButton">
+          <property name="text">
+           <string>...</string>
           </property>
           <property name="icon">
-           <iconset theme="QIcon::ThemeIcon::ListRemove"/>
+           <iconset resource="resources.qrc">
+            <normaloff>:/resources/icon_select2.svg</normaloff>:/resources/icon_select2.svg</iconset>
           </property>
-          <property name="iconSize">
-           <size>
-            <width>18</width>
-            <height>18</height>
-           </size>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="Line" name="line_6">
+          <property name="orientation">
+           <enum>Qt::Orientation::Vertical</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QToolButton" name="roadToolButton">
+          <property name="text">
+           <string>...</string>
+          </property>
+          <property name="icon">
+           <iconset resource="resources.qrc">
+            <normaloff>:/resources/icon_road.svg</normaloff>:/resources/icon_road.svg</iconset>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
@@ -109,7 +147,7 @@
          </widget>
         </item>
         <item>
-         <widget class="Line" name="line">
+         <widget class="Line" name="line_5">
           <property name="orientation">
            <enum>Qt::Orientation::Vertical</enum>
           </property>
@@ -117,207 +155,74 @@
         </item>
         <item>
          <widget class="QToolButton" name="intersectionToolButton">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>18</width>
-            <height>18</height>
-           </size>
-          </property>
-          <property name="baseSize">
-           <size>
-            <width>0</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="toolTip">
-           <string>Create an intersection</string>
-          </property>
           <property name="text">
            <string>...</string>
           </property>
           <property name="icon">
-           <iconset theme="QIcon::ThemeIcon::EditClear"/>
-          </property>
-          <property name="iconSize">
-           <size>
-            <width>18</width>
-            <height>18</height>
-           </size>
+           <iconset resource="resources.qrc">
+            <normaloff>:/resources/icon_intersection.svg</normaloff>:/resources/icon_intersection.svg</iconset>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QToolButton" name="toolButton_5">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>18</width>
-            <height>18</height>
-           </size>
-          </property>
-          <property name="toolTip">
-           <string>Create a roundabout</string>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-          <property name="icon">
-           <iconset theme="QIcon::ThemeIcon::DriveOptical"/>
-          </property>
-          <property name="iconSize">
-           <size>
-            <width>18</width>
-            <height>18</height>
-           </size>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QToolButton" name="toolButton_2">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>18</width>
-            <height>18</height>
-           </size>
-          </property>
-          <property name="toolTip">
-           <string>Place a traffic light controller</string>
-          </property>
+         <widget class="QToolButton" name="roundaboutToolButton">
           <property name="text">
            <string>...</string>
           </property>
           <property name="icon">
-           <iconset theme="QIcon::ThemeIcon::EditSelectAll"/>
-          </property>
-          <property name="iconSize">
-           <size>
-            <width>18</width>
-            <height>18</height>
-           </size>
+           <iconset resource="resources.qrc">
+            <normaloff>:/resources/icon_roundabout.svg</normaloff>:/resources/icon_roundabout.svg</iconset>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QToolButton" name="toolButton_3">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>18</width>
-            <height>18</height>
-           </size>
-          </property>
-          <property name="toolTip">
-           <string>Place a detector</string>
-          </property>
+         <widget class="QToolButton" name="crossingToolButton">
           <property name="text">
            <string>...</string>
           </property>
           <property name="icon">
-           <iconset theme="QIcon::ThemeIcon::AppointmentNew"/>
-          </property>
-          <property name="iconSize">
-           <size>
-            <width>18</width>
-            <height>18</height>
-           </size>
+           <iconset resource="resources.qrc">
+            <normaloff>:/resources/icon_crossing.svg</normaloff>:/resources/icon_crossing.svg</iconset>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QToolButton" name="toolButton_7">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>18</width>
-            <height>18</height>
-           </size>
-          </property>
-          <property name="toolTip">
-           <string>Place a pedestrian crossing</string>
-          </property>
+         <widget class="QToolButton" name="controllerToolButton">
           <property name="text">
            <string>...</string>
           </property>
           <property name="icon">
-           <iconset theme="QIcon::ThemeIcon::FormatJustifyCenter"/>
-          </property>
-          <property name="iconSize">
-           <size>
-            <width>18</width>
-            <height>18</height>
-           </size>
+           <iconset resource="resources.qrc">
+            <normaloff>:/resources/icon_controller.svg</normaloff>:/resources/icon_controller.svg</iconset>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="Line" name="line_2">
+         <widget class="QToolButton" name="detectorToolButton">
+          <property name="text">
+           <string>...</string>
+          </property>
+          <property name="icon">
+           <iconset resource="resources.qrc">
+            <normaloff>:/resources/icon_detector.svg</normaloff>:/resources/icon_detector.svg</iconset>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QToolButton" name="generatorToolButton">
+          <property name="text">
+           <string>...</string>
+          </property>
+          <property name="icon">
+           <iconset resource="resources.qrc">
+            <normaloff>:/resources/icon_generator2.svg</normaloff>:/resources/icon_generator2.svg</iconset>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="Line" name="line_4">
           <property name="orientation">
            <enum>Qt::Orientation::Vertical</enum>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QToolButton" name="toolButton_4">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>18</width>
-            <height>18</height>
-           </size>
-          </property>
-          <property name="toolTip">
-           <string>Place a generator</string>
-          </property>
-          <property name="text">
-           <string>...</string>
-          </property>
-          <property name="icon">
-           <iconset theme="QIcon::ThemeIcon::MediaEject"/>
-          </property>
-          <property name="iconSize">
-           <size>
-            <width>18</width>
-            <height>18</height>
-           </size>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QToolButton" name="toolButton_12">
-          <property name="text">
-           <string>...</string>
           </property>
          </widget>
         </item>
@@ -340,9 +245,6 @@
         <string>Simulation</string>
        </attribute>
        <layout class="QHBoxLayout" name="horizontalLayout_3">
-        <property name="spacing">
-         <number>10</number>
-        </property>
         <item>
          <widget class="QComboBox" name="comboBox">
           <property name="placeholderText">
@@ -433,7 +335,7 @@
        <number>0</number>
       </property>
       <item>
-       <widget class="QGraphicsView" name="graphicsView"/>
+       <widget class="GraphicsViewPan" name="graphicsView"/>
       </item>
       <item>
        <widget class="QTreeWidget" name="treeWidget">
@@ -470,6 +372,7 @@
      <string>View</string>
     </property>
     <addaction name="actionDock"/>
+    <addaction name="actionReset_zoom_and_pan"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuWindows"/>
@@ -519,7 +422,21 @@
     <string>Dock</string>
    </property>
   </action>
+  <action name="actionReset_zoom_and_pan">
+   <property name="text">
+    <string>Reset zoom and pan</string>
+   </property>
+  </action>
  </widget>
- <resources/>
+ <customwidgets>
+  <customwidget>
+   <class>GraphicsViewPan</class>
+   <extends>QGraphicsView</extends>
+   <header>../../../../graphicsviewpan.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

@@ -1,5 +1,6 @@
 #include "roadtool.h"
 #include "simulationscene.h"
+#include "roaditem.h"
 #include <QPen>
 
 RoadTool::RoadTool(QObject *parent)
@@ -27,10 +28,15 @@ void RoadTool::mouseMoveEvent(QGraphicsSceneMouseEvent *event, SimulationScene *
 
 void RoadTool::mouseReleaseEvent(QGraphicsSceneMouseEvent *event, SimulationScene *scene) {
     if (rubberBandLine && event->button() == Qt::LeftButton) {
-        // Create the final line item
-        QGraphicsLineItem *line = new QGraphicsLineItem(rubberBandLine->line());
-        line->setPen(QPen(Qt::black, 3));
-        scene->addItem(line);
+        // Create the final RoadItem instead of a QGraphicsLineItem
+        if (rubberBandLine->line().length() > 10) {
+            RoadItem *road = new RoadItem(rubberBandLine->line().p1(), rubberBandLine->line().p2());
+            scene->addItem(road);
+        }
+        else
+        {
+            qDebug() << "Road segment too short";
+        }
 
         // Remove the rubber-band line
         scene->removeItem(rubberBandLine);

@@ -59,26 +59,10 @@ void MainWindow::setupDock()
 void MainWindow::setupScene()
 {
     scene_ = new SimulationScene(this);
-    scene_->setBackgroundBrush(QColor("#2c2c2c"));
+    scene_->setBackgroundBrush(QColor("#C1DBC1"));
 
     qreal huge_dimension = 100000;
     scene_->setSceneRect(-huge_dimension, -huge_dimension, huge_dimension * 2, huge_dimension * 2);
-
-
-    QGraphicsRectItem *rect = new QGraphicsRectItem(0, 0, 200, 100);
-    rect->setBrush(QColor("green"));
-    rect->setPen(QPen(Qt::black, 2));
-    rect->setFlag(QGraphicsItem::ItemIsMovable);
-    scene_->addItem(rect);
-
-    QGraphicsLineItem *line = new QGraphicsLineItem(50, 50, 250, 150);
-    line->setPen(QPen(Qt::red, 3));
-    scene_->addItem(line);
-
-    QGraphicsTextItem *text = new QGraphicsTextItem("Hello, 2D Scene!");
-    text->setPos(10, 100);
-    text->setDefaultTextColor(Qt::white);
-    scene_->addItem(text);
 }
 
 void MainWindow::setupView()
@@ -88,7 +72,6 @@ void MainWindow::setupView()
 
     view_->setScene(scene_);
     view_->setRenderHint(QPainter::Antialiasing); // Optional: for smoother rendering
-    view_->setOptimizationFlag(QGraphicsView::DontAdjustForAntialiasing, true); // Performance hint
 
     view_->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     view_->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);

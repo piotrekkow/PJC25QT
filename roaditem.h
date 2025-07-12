@@ -26,4 +26,9 @@ private:
     ObjectHandle *endHandle;
     QPointF startPoint;
     QPointF endPoint;
+    QColor roadColor;
+
+protected:
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event) override;
+    // void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
 };

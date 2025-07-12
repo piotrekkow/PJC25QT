@@ -1,8 +1,12 @@
 #include "roaditem.h"
 #include <QPainter>
+#include <QDebug> // For placeholder logging
+#include <QGraphicsSceneMouseEvent> // For the event
+
+const qreal ROAD_PEN_WIDTH = 8.0;
 
 RoadItem::RoadItem(const QPointF &start, const QPointF &end, QGraphicsItem *parent)
-    : BaseObject(parent), startPoint(start), endPoint(end) {
+    : BaseObject(parent), startPoint(start), endPoint(end), roadColor(Qt::gray) {
 
     // Create handles as children of this RoadItem
     startHandle = new ObjectHandle(this);
@@ -23,12 +27,17 @@ RoadItem::RoadItem(const QPointF &start, const QPointF &end, QGraphicsItem *pare
 QRectF RoadItem::boundingRect() const {
     // Return a rectangle that encloses the line between the two points.
     // The QRectF constructor automatically handles which point is top-left vs bottom-right.
-    return QRectF(startPoint, endPoint).normalized();
+    qreal extra = ROAD_PEN_WIDTH / 4.0;
+    QRectF baseRect = QRectF(startPoint, endPoint)
+        .normalized()
+        .adjusted(-extra, -extra, extra, extra);
+
+    return baseRect.adjusted(0, 0, 1, 1);
 }
 
 void RoadItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
     // You can customize the pen for color, width, style, etc.
-    QPen roadPen(Qt::black, 5); // A thick black pen
+    QPen roadPen(roadColor, ROAD_PEN_WIDTH);
     painter->setPen(roadPen);
 
     // Draw a line using the internal start and end points, which are
@@ -54,5 +63,18 @@ void RoadItem::handleMoved() {
     prepareGeometryChange(); // Important call before changing the bounding rect
     startPoint = startHandle->pos();
     endPoint = endHandle->pos();
-    update(); // Redraw the item
 }
+
+void RoadItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
+{
+    qDebug() << "RoadItem double-clicked!";
+    // TODO: Create and show your properties dialog here.
+    event->accept(); // Accept the event to stop it from propagating further
+}
+
+// void RoadItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
+// {
+//     qDebug() << "Road pressed";
+//     roadColor = Qt::lightGray;
+//     event->accept();
+// }

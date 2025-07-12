@@ -23,6 +23,11 @@ set(PROJECT_SOURCES
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 
     qt_add_executable(PJC2025
         MANUAL_FINALIZATION
@@ -30,7 +35,17 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets)
 
         vector2.h vector2.cpp
         vector2toqt.h
-        sceneview.h sceneview.cpp
+
+        graphicsviewzoom.h graphicsviewzoom.cpp
+        graphicsviewpan.h graphicsviewpan.cpp
+        simulationscene.h simulationscene.cpp
+        tool.h tool.cpp
+        roadtool.h roadtool.cpp
+        resources.qrc
+        baseobject.h baseobject.cpp
+        objecthandle.h objecthandle.cpp
+        roaditem.h roaditem.cpp
+        selecttool.h selecttool.cpp
 
 
 
@@ -54,6 +69,11 @@ target_link_libraries(PJC2025 PRIVATE
 )
 target_link_libraries(PJC2025 PRIVATE Qt6::Core)
 target_link_libraries(PJC2025 PRIVATE Qt6::Widgets)
+target_link_libraries(PJC2025 PRIVATE Qt6::Core)
+target_link_libraries(PJC2025 PRIVATE Qt6::Core)
+target_link_libraries(PJC2025 PRIVATE Qt6::Core)
+target_link_libraries(PJC2025 PRIVATE Qt6::Core)
+target_link_libraries(PJC2025 PRIVATE Qt6::Core)
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an

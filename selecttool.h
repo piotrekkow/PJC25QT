@@ -10,13 +10,13 @@ class SelectTool : public Tool
 
 public:
     SelectTool(QObject* partent = nullptr);
+    ~SelectTool();
 
     void mousePressEvent(QGraphicsSceneMouseEvent *event, SimulationScene *scene) override;
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event, SimulationScene *scene) override;
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event, SimulationScene *scene) override;
 
 private:
-    QGraphicsItem *itemBeingMoved;
     BaseObject* currentlySelectedItem;
     QPointF originalPosition;
     QPointF pressPosition;

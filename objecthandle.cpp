@@ -1,20 +1,23 @@
 #include "objecthandle.h"
-#include "roaditem.h" // The handle needs to know about its potential parent
+#include "roaditem.h"
 #include <QBrush>
+#include <QPen>
 
 ObjectHandle::ObjectHandle(QGraphicsItem *parent) : QGraphicsRectItem(-5, -5, 10, 10, parent) {
     setBrush(Qt::green);
+
+    // It's still good practice to be explicit about the pen
+    setPen(QPen(Qt::black, 1));
+
     setFlag(QGraphicsItem::ItemIsMovable);
-    setFlag(QGraphicsItem::ItemSendsGeometryChanges); // Crucial for itemChange()
+    setFlag(QGraphicsItem::ItemSendsGeometryChanges);
 }
 
 QVariant ObjectHandle::itemChange(GraphicsItemChange change, const QVariant &value) {
-    // If the handle is being moved by the user...
     if (change == ItemPositionHasChanged && scene()) {
-        // ...get the parent (the RoadItem) and tell it to update.
         RoadItem *road = qgraphicsitem_cast<RoadItem*>(parentItem());
         if (road) {
-            road->handleMoved(); // Custom slot on the RoadItem
+            road->handleMoved();
         }
     }
     return QGraphicsRectItem::itemChange(change, value);

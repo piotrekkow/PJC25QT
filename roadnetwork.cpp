@@ -1,5 +1,6 @@
 #include "roadnetwork.h"
 #include "intersection.h"
+#include <QDebug>
 
 RoadNetwork::RoadNetwork() {}
 
@@ -14,6 +15,18 @@ Intersection *RoadNetwork::createIntersection(QPointF position)
 Roadway *RoadNetwork::createRoadway(Intersection *source, Intersection *destination)
 {
     roadways_.emplace_back(std::make_unique<Roadway>(source, destination));
-    return roadways_.back().get();
+    Roadway* newRoadway{ roadways_.back().get() };
+
+    for (const auto& candidate : source->getIncomingRoadways())
+    {
+        if (candidate->getSource() == destination)
+        {
+            newRoadway->setOppositeRoadway(candidate);
+            candidate->setOppositeRoadway(newRoadway);
+            qDebug() << "Set 2 opposite roadways.";
+            break;
+        }
+    }
+    return newRoadway;
 }
 

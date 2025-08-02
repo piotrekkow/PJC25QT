@@ -28,24 +28,35 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 
     qt_add_executable(PJC2025
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
 
-        vector2.h vector2.cpp
-        vector2toqt.h
 
-        graphicsviewzoom.h graphicsviewzoom.cpp
-        graphicsviewpan.h graphicsviewpan.cpp
-        simulationscene.h simulationscene.cpp
-        tool.h tool.cpp
-        roadtool.h roadtool.cpp
+
+
+
+
+
+
+
         resources.qrc
-        baseobject.h baseobject.cpp
-        objecthandle.h objecthandle.cpp
-        roaditem.h roaditem.cpp
-        selecttool.h selecttool.cpp
+
+
+
+
+        roadnetwork.h roadnetwork.cpp
+        renderer.h renderer.cpp
+        simulation.h simulation.cpp
+        intersection.h intersection.cpp
+        roadway.h roadway.cpp
+
+
+
+
 
 
 
@@ -69,6 +80,8 @@ target_link_libraries(PJC2025 PRIVATE
 )
 target_link_libraries(PJC2025 PRIVATE Qt6::Core)
 target_link_libraries(PJC2025 PRIVATE Qt6::Widgets)
+target_link_libraries(PJC2025 PRIVATE Qt6::Core)
+target_link_libraries(PJC2025 PRIVATE Qt6::Core)
 target_link_libraries(PJC2025 PRIVATE Qt6::Core)
 target_link_libraries(PJC2025 PRIVATE Qt6::Core)
 target_link_libraries(PJC2025 PRIVATE Qt6::Core)

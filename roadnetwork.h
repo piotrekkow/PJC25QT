@@ -17,4 +17,6 @@ public:
     ~RoadNetwork();
     Intersection* createIntersection(QPointF position);
     Roadway* createRoadway(Intersection* source, Intersection* destination);
+    const std::vector<std::unique_ptr<Intersection>>& getIntersections() const { return intersections_; }
+    const std::vector<std::unique_ptr<Roadway>>& getRoadways() const { return roadways_; }
 };

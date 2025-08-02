@@ -16,6 +16,11 @@ GraphicsViewZoom::GraphicsViewZoom(QGraphicsView* view)
     view_->setResizeAnchor(QGraphicsView::AnchorUnderMouse);
 }
 
+float GraphicsViewZoom::getZoomLevel() const
+{
+    return zoomLevel_;
+}
+
 bool GraphicsViewZoom::eventFilter(QObject* object, QEvent* event)
 {
     if (event->type() == QEvent::Wheel)
@@ -26,12 +31,12 @@ bool GraphicsViewZoom::eventFilter(QObject* object, QEvent* event)
 
         float futureLevel = zoomLevel_ * factor;
 
-        if (futureLevel < 0.05f || futureLevel > 3.0f) return true; // zoom limit
+        if (futureLevel < 0.01 || futureLevel > 5.0) return true; // zoom limit
 
         zoomLevel_ = futureLevel;
         view_->scale(factor, factor);
 
-        emit zoomed();
+        emit zoomed(zoomLevel_);
         return true;
     }
 
@@ -57,5 +62,5 @@ void GraphicsViewZoom::resetZoom()
     view_->fitInView(bounds, Qt::KeepAspectRatio);
 
     zoomLevel_ = 1.0;
-    emit zoomed();
+    emit zoomed(zoomLevel_);
 }

@@ -1,10 +1,8 @@
 #pragma once
 
 #include <QMainWindow>
-#include <QGraphicsScene>
-#include <QGraphicsView>
-#include "graphicsviewzoom.h"
-#include "simulationscene.h"
+#include <QTimer>
+#include "simulation.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -20,21 +18,12 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-private slots:
-    void on_selectToolButton_toggled(bool checked);
-
-    void on_roadToolButton_toggled(bool checked);
-
 private:
-    Ui::MainWindow* ui_;
-    SimulationScene* scene_;
-    QGraphicsView* view_;
-    GraphicsViewZoom* zoomController_;
+    Ui::MainWindow *ui;
+    std::unique_ptr<Simulation> simulation_;
+    QTimer* simulationTimer_;
+    QGraphicsScene* scene_;
 
-    void setupConnections();
-    void setupDock();
-    void setupSceneView();
-    void setupScene();
-    void setupView();
-    void setupTools();
+private slots:
+    void runSimulationUpdate();
 };

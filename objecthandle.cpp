@@ -11,6 +11,7 @@ ObjectHandle::ObjectHandle(QGraphicsItem *parent) : QGraphicsRectItem(-5, -5, 10
 
     setFlag(QGraphicsItem::ItemIsMovable);
     setFlag(QGraphicsItem::ItemSendsGeometryChanges);
+    setFlag(QGraphicsItem::ItemIgnoresTransformations); // constant size with changing zoom level
 }
 
 QVariant ObjectHandle::itemChange(GraphicsItemChange change, const QVariant &value) {

@@ -3,7 +3,7 @@
 #include <QDebug> // For placeholder logging
 #include <QGraphicsSceneMouseEvent> // For the event
 
-const qreal ROAD_PEN_WIDTH = 8.0;
+const qreal ROAD_PEN_WIDTH = 16.0;
 
 RoadItem::RoadItem(const QPointF &start, const QPointF &end, QGraphicsItem *parent)
     : BaseObject(parent), startPoint(start), endPoint(end), roadColor(Qt::gray) {
@@ -25,9 +25,7 @@ RoadItem::RoadItem(const QPointF &start, const QPointF &end, QGraphicsItem *pare
 }
 
 QRectF RoadItem::boundingRect() const {
-    // Return a rectangle that encloses the line between the two points.
-    // The QRectF constructor automatically handles which point is top-left vs bottom-right.
-    qreal extra = ROAD_PEN_WIDTH / 4.0;
+    qreal extra = ROAD_PEN_WIDTH;
     QRectF baseRect = QRectF(startPoint, endPoint)
         .normalized()
         .adjusted(-extra, -extra, extra, extra);
@@ -59,6 +57,7 @@ void RoadItem::hideHandles() {
 }
 
 void RoadItem::handleMoved() {
+    update();
     // Update internal points based on handle positions
     prepareGeometryChange(); // Important call before changing the bounding rect
     startPoint = startHandle->pos();

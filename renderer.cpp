@@ -14,12 +14,6 @@ void Renderer::draw()
     scene_->clear();
     qreal intersectionSize = 20.0;
 
-    QLineF base({100, 100}, {150, 150});
-    QLineF offbase = offsetLine(base, 0.5);
-    scene_->addLine(base, QPen(Qt::green, 2));
-    scene_->addLine(offbase, QPen(Qt::yellow, 2));
-
-
     QPen roadPen(Qt::white, 2);
     for (const auto& roadway : network_->getRoadways())
     {
@@ -27,7 +21,7 @@ void Renderer::draw()
         QPointF p2 = roadway->getDestination()->getPosition();
         QLineF line = QLineF(p1, p2);
 
-        if (roadway->getOppositeDirectionRoadway())
+        if (roadway->getOppositeRoadway())
         {
             line = offsetLine(line, 5.0);
         }

@@ -17,16 +17,14 @@ Roadway *RoadNetwork::createRoadway(Intersection *source, Intersection *destinat
     roadways_.emplace_back(std::make_unique<Roadway>(source, destination));
     Roadway* newRoadway{ roadways_.back().get() };
 
-    for (const auto& candidate : source->getIncomingRoadways())
+    for (Roadway* candidateRoadway : destination->getOutgoingRoadways())
     {
-        if (candidate->getSource() == destination)
+        if (candidateRoadway->getDestination() == source)
         {
-            newRoadway->setOppositeRoadway(candidate);
-            candidate->setOppositeRoadway(newRoadway);
-            qDebug() << "Set 2 opposite roadways.";
+            newRoadway->setOppositeRoadway(candidateRoadway);
+            candidateRoadway->setOppositeRoadway(newRoadway);
             break;
         }
     }
     return newRoadway;
 }
-

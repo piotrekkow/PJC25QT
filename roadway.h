@@ -12,6 +12,6 @@ public:
     Roadway(Intersection* source, Intersection* destination);
     Intersection* getSource() const { return sourceIntersection_; }
     Intersection* getDestination() const { return destinationIntersection_; }
-    Roadway* getOppositeDirectionRoadway() { return oppositeRoadway_; }    // Used in Renderer to simplify offseting logic
+    Roadway* getOppositeRoadway() { return oppositeRoadway_; }    // Used in Renderer to simplify offseting logic
     void setOppositeRoadway(Roadway* roadway) { oppositeRoadway_ = roadway; }
 };

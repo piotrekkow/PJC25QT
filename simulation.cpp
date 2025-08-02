@@ -12,10 +12,13 @@ void Simulation::initialize()
 {
     auto is1 = network_->createIntersection({0, 0});
     auto is2 = network_->createIntersection({0, 200});
-    auto is3 = network_->createIntersection({100,100});
+    auto is3 = network_->createIntersection({200,50});
+    auto is4 = network_->createIntersection({-50, -200});
     auto r1 = network_->createRoadway(is1, is2);
     auto r2 = network_->createRoadway(is2, is1);
     auto r3 = network_->createRoadway(is3, is1);
+    network_->createRoadway(is1, is4);
+    network_->createRoadway(is4, is1);
 
     // The Qt way to print debug info
     qDebug() << "Address of roadway opposite to r1 is" << (void*)r1->getOppositeRoadway();

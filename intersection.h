@@ -1,6 +1,6 @@
 #pragma once
 
-#include "roadway.h"
+#include "intersectionmovement.h"
 #include <QPointF>
 
 class Intersection
@@ -8,6 +8,7 @@ class Intersection
     QPointF position_;
     std::vector<Roadway*> incomingRoadways_;
     std::vector<Roadway*> outgoingRoadways_;
+    std::vector<IntersectionMovement> movements_;
 
 public:
     Intersection(QPointF position);
@@ -19,6 +20,9 @@ public:
     void addOutgoingRoadway(Roadway* roadway);
     QPointF getPosition() const { return position_; }
 
-private:
+    IntersectionMovement* createMovement(Roadway* incoming, Roadway* outgoing);
+    IntersectionMovement* findMovement(Roadway* incoming, Roadway* outgoing);   // for modification
+    const IntersectionMovement* findMovement(Roadway* incoming, Roadway* outgoing) const;   // for look-up
 
+private:
 };

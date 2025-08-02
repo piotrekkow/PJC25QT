@@ -17,6 +17,9 @@ Roadway *RoadNetwork::createRoadway(Intersection *source, Intersection *destinat
     roadways_.emplace_back(std::make_unique<Roadway>(source, destination));
     Roadway* newRoadway{ roadways_.back().get() };
 
+    source->addOutgoingRoadway(newRoadway);
+    destination->addIncomingRoadway(newRoadway);
+
     for (Roadway* candidateRoadway : destination->getOutgoingRoadways())
     {
         if (candidateRoadway->getDestination() == source)

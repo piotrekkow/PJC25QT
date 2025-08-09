@@ -12,22 +12,13 @@ Intersection *RoadNetwork::createIntersection(QPointF position)
     return intersections_.back().get();
 }
 
-Roadway *RoadNetwork::createRoadway(Intersection *source, Intersection *destination)
+Road *RoadNetwork::createRoad(Intersection *primary, Intersection *secondary)
 {
-    roadways_.emplace_back(std::make_unique<Roadway>(source, destination));
-    Roadway* newRoadway{ roadways_.back().get() };
+    roads_.emplace_back(std::make_unique<Road>(primary, secondary));
+    Road* newRoad{ roads_.back().get() };
 
-    source->addOutgoingRoadway(newRoadway);
-    destination->addIncomingRoadway(newRoadway);
+    primary->addRoad(newRoad);
+    secondary->addRoad(newRoad);
 
-    for (Roadway* candidateRoadway : destination->getOutgoingRoadways())
-    {
-        if (candidateRoadway->getDestination() == source)
-        {
-            newRoadway->setOppositeRoadway(candidateRoadway);
-            candidateRoadway->setOppositeRoadway(newRoadway);
-            break;
-        }
-    }
-    return newRoadway;
+    return newRoad;
 }

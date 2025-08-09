@@ -1,0 +1,22 @@
+#pragma once
+#include "intersection.h"
+#include "roadway.h"
+#include <utility>
+
+class Road
+{
+    Intersection* primaryIntersection_;
+    Intersection* secondaryIntersection_;
+    std::unique_ptr<Roadway> primaryRoadway_;   // primary roadway's destination is primary intersection
+    std::unique_ptr<Roadway> secondaryRoadway_;
+
+public:
+    Road(Intersection* primary, Intersection* secondary);
+    Roadway* createRoadway(Intersection* target);
+    std::pair<Roadway*, Roadway*> createRoadways();
+
+    Intersection* getPrimaryIntersection() const { return primaryIntersection_; }
+    Intersection* getSecondaryIntersection() const { return secondaryIntersection_; }
+    Roadway* getPrimaryRoadway() const { return primaryRoadway_.get(); }
+    Roadway* getSecondaryRoadway() const { return secondaryRoadway_.get(); }
+};

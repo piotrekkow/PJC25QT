@@ -15,17 +15,29 @@ void Renderer::draw()
     qreal intersectionSize = 20.0;
 
     QPen roadPen(Qt::white, 2);
-    for (const auto& roadway : network_->getRoadways())
+    QPen roadwayPen(Qt::yellow, 1);
+    for (const auto& road : network_->getRoads())
     {
-        QPointF p1 = roadway->getSource()->getPosition();
-        QPointF p2 = roadway->getDestination()->getPosition();
-        QLineF line = QLineF(p1, p2);
+        QPointF primaryIntersectionPos{ road->getPrimaryIntersection()->getPosition() };
+        QPointF secondaryIntersectionPos{ road->getSecondaryIntersection()->getPosition() };
 
-        if (roadway->getOppositeRoadway())
+        QLineF roadLine = QLineF(primaryIntersectionPos, secondaryIntersectionPos);
+        scene_->addLine(roadLine, roadPen);
+
+        QLineF primaryRoadwayLine = roadLine;
+        QLineF secondaryRoadwayLine = QLineF(secondaryIntersectionPos, primaryIntersectionPos);
+
+        if (road->getPrimaryRoadway() && road->getSecondaryRoadway())
         {
-            line = offsetLine(line, 5.0);
+            primaryRoadwayLine = offsetLine(primaryRoadwayLine, 5.0);
+            secondaryRoadwayLine = offsetLine(secondaryRoadwayLine, 5.0);
         }
-        drawArrow(line, 15.0, 20.0, roadPen);
+
+        if (road->getPrimaryRoadway())
+            drawArrow(primaryRoadwayLine, 15.0, 20.0, roadwayPen);
+
+        if (road->getSecondaryRoadway())
+            drawArrow(secondaryRoadwayLine, 15.0, 20.0, roadwayPen);
     }
 
 

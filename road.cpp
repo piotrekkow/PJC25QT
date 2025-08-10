@@ -31,3 +31,17 @@ std::pair<Roadway *, Roadway *> Road::createRoadways()
     secondaryRoadway_ = std::make_unique<Roadway>(this, primaryIntersection_, secondaryIntersection_);
     return std::pair(primaryRoadway_.get(), secondaryRoadway_.get());
 }
+
+Roadway *Road::getRoadway(Intersection *target) const
+{
+    if (target == primaryIntersection_)
+    {
+        return primaryRoadway_.get();
+    }
+    else if (target == secondaryIntersection_)
+    {
+        return secondaryRoadway_.get();
+    }
+    else
+        throw std::invalid_argument("Provided target intersection not at either endpoint of this road");
+}

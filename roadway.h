@@ -1,7 +1,4 @@
 #pragma once
-#include "lane.h"
-#include <vector>
-#include <memory>
 
 class Intersection;
 class Road;
@@ -11,11 +8,11 @@ class Roadway
     Road* parent_;
     Intersection* sourceIntersection_;
     Intersection* destinationIntersection_;
-    std::vector<std::unique_ptr<Lane>> lanes_;
+    int laneCount_;
 
 public:
-    Roadway(Road* parent, Intersection *source, Intersection *destination);
+    Roadway(Road* parent, Intersection *source, Intersection *destination, int laneCount = 1);
     Intersection* getSource() const { return sourceIntersection_; }
     Intersection* getDestination() const { return destinationIntersection_; }
-    Lane* addLane();
+    void setLaneCount(int numberOfLanes) { laneCount_ = numberOfLanes; }
 };

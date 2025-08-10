@@ -58,6 +58,7 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
 
 
         road.h road.cpp
+        intersectionapproach.h intersectionapproach.cpp
 
 
 

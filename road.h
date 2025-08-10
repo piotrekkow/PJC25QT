@@ -2,6 +2,7 @@
 #include "intersection.h"
 #include "roadway.h"
 #include <utility>
+#include <memory>
 
 class Road
 {
@@ -19,4 +20,6 @@ public:
     Intersection* getSecondaryIntersection() const { return secondaryIntersection_; }
     Roadway* getPrimaryRoadway() const { return primaryRoadway_.get(); }
     Roadway* getSecondaryRoadway() const { return secondaryRoadway_.get(); }
+
+    Roadway* getRoadway(Intersection* target) const;
 };

@@ -6,14 +6,15 @@ class RoadNetwork;
 
 class Renderer
 {
+    QGraphicsScene* scene_;
+    const RoadNetwork* network_;
+
 public:
-    Renderer(QGraphicsScene* scene, RoadNetwork* network);
-    void draw();
+    Renderer(QGraphicsScene* scene, const RoadNetwork* network);
+    void draw() const;
 
 private:
-    QGraphicsScene* scene_;
-    RoadNetwork* network_;
 
-    void drawArrow(QLineF baseline, qreal quiverLength, qreal quiverAngleDeg, QPen pen);
-    QLineF offsetLine(const QLineF& line, qreal offset);
+    void drawArrow(QLineF baseline, qreal quiverLength, qreal quiverAngleDeg, QPen pen) const;
+    QLineF offsetLine(const QLineF& line, qreal offset) const;
 };

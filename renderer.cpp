@@ -4,12 +4,12 @@
 #include <QGraphicsEllipseItem>
 #include <QGraphicsLineItem>
 
-Renderer::Renderer(QGraphicsScene *scene, RoadNetwork *network)
+Renderer::Renderer(QGraphicsScene *scene, const RoadNetwork *network)
     : scene_{ scene }
     , network_{ network }
 {}
 
-void Renderer::draw()
+void Renderer::draw() const
 {
     scene_->clear();
     qreal intersectionSize = 20.0;
@@ -38,6 +38,16 @@ void Renderer::draw()
 
         if (road->getSecondaryRoadway())
             drawArrow(secondaryRoadwayLine, 15.0, 20.0, roadwayPen);
+
+        for (const auto& lane : road->getPrimaryRoadway()->getLanesView())
+        {
+            primaryRoadwayLine = offsetLine(primaryRoadwayLine, lane->getWidth());
+        }
+
+        for (const auto& lane : road->getSecondaryRoadway()->getLanesView())
+        {
+            primaryRoadwayLine = offsetLine(secondaryRoadwayLine, lane->getWidth());
+        }
     }
 
 
@@ -49,7 +59,7 @@ void Renderer::draw()
     }
 }
 
-void Renderer::drawArrow(QLineF baseline, qreal arrowheadLength, qreal arrowheadAngleDeg, QPen pen)
+void Renderer::drawArrow(QLineF baseline, qreal arrowheadLength, qreal arrowheadAngleDeg, QPen pen) const
 {
     if (qFuzzyCompare(baseline.length(), qreal(0.)))
         return;
@@ -71,7 +81,7 @@ void Renderer::drawArrow(QLineF baseline, qreal arrowheadLength, qreal arrowhead
     scene_->addLine(arrowHeadLine2, pen);
 }
 
-QLineF Renderer::offsetLine(const QLineF& line, qreal offset)
+QLineF Renderer::offsetLine(const QLineF& line, qreal offset) const
 {
     // Step 1: get the direction vector of the line
     QPointF direction = line.p2() - line.p1();

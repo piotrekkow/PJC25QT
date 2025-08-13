@@ -1,5 +1,8 @@
 #include "lane.h"
 
-Lane::Lane(float width)
+
+Lane::Lane(std::optional<float> length, float width)
     : width_{ width }
-{}
+    , length_{ length }
+{
+}

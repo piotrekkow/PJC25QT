@@ -4,6 +4,7 @@
 Road::Road(Intersection *primary, Intersection *secondary)
     : primaryIntersection_{ primary }
     , secondaryIntersection_{ secondary }
+    , geometry_(this)
 {
 }
 

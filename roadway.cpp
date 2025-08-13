@@ -1,16 +1,17 @@
 #include "roadway.h"
 
-Roadway::Roadway(Road* parent, Intersection *source, Intersection *destination, int laneCount)
+Roadway::Roadway(Road* parent, Intersection *source, Intersection *destination)
     : parent_{ parent }
     , sourceIntersection_{ source }
     , destinationIntersection_{ destination }
-    , laneCount_{ laneCount }
 {
+    addLane();
 }
 
 
-// Lane* Roadway::addLane()
-// {
-//     lanes_.emplace_back(std::make_unique<Lane>());
-//     return lanes_.back().get();
-// }
+Lane* Roadway::addLane()
+{
+    lanes_.emplace_back(std::make_unique<Lane>(std::nullopt));
+    return lanes_.back().get();
+}
+

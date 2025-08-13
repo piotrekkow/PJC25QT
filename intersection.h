@@ -2,20 +2,20 @@
 
 #include "intersectionapproach.h"
 #include <QPointF>
-#include <unordered_map>
-#include <ranges>
+// #include <unordered_map>
+// #include <ranges>
 
 class Road;
 
 class Intersection
 {
     QPointF position_;
-    std::unordered_map<Road*, IntersectionApproach> approaches_;
+    std::vector<Road*> roads_;
 
 public:
     Intersection(QPointF position);
-    auto getRoadsView() const { return std::views::keys(approaches_); }
     QPointF getPosition() const { return position_; }
+    const std::vector<Road*>& getRoads() const { return roads_; }
 
     void addRoad(Road *road);
 

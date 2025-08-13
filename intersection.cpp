@@ -6,5 +6,5 @@ Intersection::Intersection(QPointF position)
 
 void Intersection::addRoad(Road *road)
 {
-    approaches_.emplace(road, IntersectionApproach{});
+    roads_.emplace_back(road);
 }

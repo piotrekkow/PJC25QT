@@ -1,3 +1,7 @@
 #include "intersectionapproach.h"
 
-IntersectionApproach::IntersectionApproach() {}
+IntersectionApproach::IntersectionApproach(Intersection *parent)
+    : parentIntersection_{ parent }
+{
+
+}

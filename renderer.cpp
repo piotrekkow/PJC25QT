@@ -3,6 +3,7 @@
 #include "intersection.h"
 #include <QGraphicsEllipseItem>
 #include <QGraphicsLineItem>
+#include <iostream>
 
 Renderer::Renderer(QGraphicsScene *scene, const RoadNetwork *network)
     : scene_{ scene }
@@ -16,20 +17,22 @@ void Renderer::draw() const
 
     QPen roadPen(Qt::yellow, 0.25);
     QPen roadwayPen(Qt::white, 0.5);
-    QPen connectionPen(Qt::green, 0.25);
+    // QPen connectionPen(Qt::green, 0.25);
 
     for (const auto& road : network_->roads())
     {
-        QPointF startPos{ road->geometry().pointAt(0).position() };
-        QPointF endPos{ road->geometry().pointAt(1).position() };
+        QPointF startPos{ road->geometry().points().front().position() };
+        QPointF endPos{ road->geometry().points().back().position() };
 
         QLineF roadLine = QLineF(startPos, endPos);
         scene_->addLine(roadLine, roadPen);
 
         for (const auto& roadway : road->roadways())
         {
+            std::cerr << "roadway\n";
             for (const auto& lane : roadway->lanes())
             {
+                std::cerr << "lane\n";
                 QPolygonF laneGeometry = road->geometry().laneGeometry(lane.get());
                 scene_->addPolygon(laneGeometry, roadwayPen);
             }

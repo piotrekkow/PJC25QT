@@ -22,7 +22,7 @@ class Lane
     std::vector<std::unique_ptr<IntersectionConnection>> connections_;
 
 public:
-    Lane(Roadway* parent, std::optional<float> length, float width = 3.5f);
+    Lane(Roadway* parent, std::optional<float> length = std::nullopt, float width = 3.5f);
     float width() const { return width_; }
     IntersectionConnection* addConnection(Lane* target);
     Roadway* roadway() const { return roadway_; }

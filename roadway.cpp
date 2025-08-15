@@ -7,13 +7,12 @@ Roadway::Roadway(Intersection *source, Intersection *destination, RoadwayDirecti
     , direction_{ direction }
 {
     addLane();
-
 }
 
 
 Lane* Roadway::addLane()
 {
-    lanes_.emplace_back(std::make_unique<Lane>(this, std::nullopt));
+    lanes_.emplace_back(std::make_unique<Lane>(this));
     return lanes_.back().get();
 }
 

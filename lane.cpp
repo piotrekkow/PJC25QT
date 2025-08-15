@@ -31,6 +31,7 @@ float Lane::cumulativeOffset() const
     const auto& lanes = roadway_->lanes();
     for (size_t i = 0; i < index(); ++i)
         offset += lanes[i]->width();
+    offset += width_ / 2.0f;
     return offset;
 }
 

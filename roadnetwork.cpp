@@ -12,13 +12,13 @@ Intersection *RoadNetwork::createIntersection(QPointF position)
     return intersections_.back().get();
 }
 
-Road *RoadNetwork::createRoad(Intersection *primary, Intersection *secondary)
+Road *RoadNetwork::createRoad(Intersection *startIntersection, Intersection *endIntersection)
 {
-    roads_.emplace_back(std::make_unique<Road>(primary, secondary));
+    roads_.emplace_back(std::make_unique<Road>(startIntersection, endIntersection));
     Road* newRoad{ roads_.back().get() };
 
-    primary->addRoad(newRoad);
-    secondary->addRoad(newRoad);
+    startIntersection->addRoad(newRoad);
+    endIntersection->addRoad(newRoad);
 
     return newRoad;
 }

@@ -12,52 +12,40 @@ Renderer::Renderer(QGraphicsScene *scene, const RoadNetwork *network)
 void Renderer::draw() const
 {
     scene_->clear();
-    qreal intersectionSize = 20.0;
+    qreal intersectionSize = 5.0;
 
-    QPen roadPen(Qt::white, 2);
-    QPen roadwayPen(Qt::yellow, 1);
-    for (const auto& road : network_->getRoads())
+    QPen roadPen(Qt::yellow, 0.25);
+    QPen roadwayPen(Qt::white, 0.5);
+    QPen connectionPen(Qt::green, 0.25);
+
+    for (const auto& road : network_->roads())
     {
-        QPointF primaryIntersectionPos{ road->getPrimaryIntersection()->getPosition() };
-        QPointF secondaryIntersectionPos{ road->getSecondaryIntersection()->getPosition() };
+        QPointF startPos{ road->geometry().pointAt(0).position() };
+        QPointF endPos{ road->geometry().pointAt(1).position() };
 
-        QLineF roadLine = QLineF(primaryIntersectionPos, secondaryIntersectionPos);
+        QLineF roadLine = QLineF(startPos, endPos);
         scene_->addLine(roadLine, roadPen);
 
-        QLineF primaryRoadwayLine = roadLine;
-        QLineF secondaryRoadwayLine = QLineF(secondaryIntersectionPos, primaryIntersectionPos);
-
-        if (road->getPrimaryRoadway() && road->getSecondaryRoadway())
+        for (const auto& roadway : road->roadways())
         {
-            primaryRoadwayLine = offsetLine(primaryRoadwayLine, 5.0);
-            secondaryRoadwayLine = offsetLine(secondaryRoadwayLine, 5.0);
-        }
-
-        if (road->getPrimaryRoadway())
-            drawArrow(primaryRoadwayLine, 15.0, 20.0, roadwayPen);
-
-        if (road->getSecondaryRoadway())
-            drawArrow(secondaryRoadwayLine, 15.0, 20.0, roadwayPen);
-
-        for (const auto& lane : road->getPrimaryRoadway()->getLanesView())
-        {
-            primaryRoadwayLine = offsetLine(primaryRoadwayLine, lane->getWidth());
-        }
-
-        for (const auto& lane : road->getSecondaryRoadway()->getLanesView())
-        {
-            primaryRoadwayLine = offsetLine(secondaryRoadwayLine, lane->getWidth());
+            for (const auto& lane : roadway->lanes())
+            {
+                QPolygonF laneGeometry = road->geometry().laneGeometry(lane.get());
+                scene_->addPolygon(laneGeometry, roadwayPen);
+            }
         }
     }
 
 
     // Draw intersections
-    for (const auto& intersection : network_->getIntersections())
+    for (const auto& intersection : network_->intersections())
     {
-        QRectF rect(intersection->getPosition().x() - intersectionSize / 2, intersection->getPosition().y() - intersectionSize / 2, intersectionSize, intersectionSize);
-        scene_->addEllipse(rect, QPen(Qt::white), QBrush(Qt::lightGray));
+        QRectF rect(intersection->position().x() - intersectionSize / 2, intersection->position().y() - intersectionSize / 2, intersectionSize, intersectionSize);
+        scene_->addEllipse(rect, QPen(Qt::cyan));
     }
 }
+
+
 
 void Renderer::drawArrow(QLineF baseline, qreal arrowheadLength, qreal arrowheadAngleDeg, QPen pen) const
 {
@@ -67,7 +55,7 @@ void Renderer::drawArrow(QLineF baseline, qreal arrowheadLength, qreal arrowhead
     scene_->addLine(baseline, pen);
 
     qreal angle = baseline.angle();
-    QPointF midpoint = baseline.pointAt(0.5);
+    QPointF midpoint = baseline.pointAt(1.0);
 
     QLineF arrowHeadLine1(midpoint, QPointF());
     arrowHeadLine1.setLength(arrowheadLength);

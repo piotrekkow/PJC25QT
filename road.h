@@ -7,23 +7,30 @@
 
 class Road
 {
-    Intersection* primaryIntersection_;
-    Intersection* secondaryIntersection_;
-    std::unique_ptr<Roadway> primaryRoadway_;   // primary roadway's destination is primary intersection
-    std::unique_ptr<Roadway> secondaryRoadway_;
+    Intersection* startIntersection_;
+    Intersection* endIntersection_;
+    std::unique_ptr<Roadway> forwardRoadway_;   // primary roadway's destination is primary intersection
+    std::unique_ptr<Roadway> backwardRoadway_;
     RoadGeometry geometry_;
 
 public:
-    Road(Intersection* primary, Intersection* secondary);
+    Road(Intersection* start, Intersection* end);
     Roadway* createRoadway(Intersection* target);
     std::pair<Roadway*, Roadway*> createRoadways();
 
-    Intersection* getPrimaryIntersection() const { return primaryIntersection_; }
-    Intersection* getSecondaryIntersection() const { return secondaryIntersection_; }
-    Roadway* getPrimaryRoadway() const { return primaryRoadway_.get(); }
-    Roadway* getSecondaryRoadway() const { return secondaryRoadway_.get(); }
+    Intersection* startIntersection() const { return startIntersection_; }
+    Intersection* endIntersection() const { return endIntersection_; }
+    Roadway* forwardRoadway() const { return forwardRoadway_.get(); }
+    Roadway* backwardRoadway() const { return backwardRoadway_.get(); }
 
     Roadway* getRoadway(Intersection* target) const;
-    RoadGeometry& getGeometry() { return geometry_; }
-    const RoadGeometry& getGeometry() const { return geometry_; };
+    RoadGeometry& geometry() { return geometry_; }
+    const RoadGeometry& geometry() const { return geometry_; };
+    auto roadways() const {
+        std::array<const Roadway*, 2> ptrs = { forwardRoadway_.get(), backwardRoadway_.get() };
+
+        return ptrs | std::views::filter([](const Roadway* r) {
+                   return r != nullptr;
+               });
+    }
 };

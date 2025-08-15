@@ -14,8 +14,8 @@ class Intersection
 
 public:
     Intersection(QPointF position);
-    QPointF getPosition() const { return position_; }
-    const std::vector<Road*>& getRoads() const { return roads_; }
+    QPointF position() const { return position_; }
+    const std::vector<Road*>& roads() const { return roads_; }
 
     void addRoad(Road *road);
 

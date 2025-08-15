@@ -1,8 +1,10 @@
 #pragma once
 #include "roadgeometrypoint.h"
 #include <vector>
+#include <QPolygonF>
 
 class Road;
+class Lane;
 
 class RoadGeometry
 {
@@ -11,8 +13,10 @@ public:
     RoadGeometry(Road* road);
     void addPoint(QPointF position, size_t index);
 
-    RoadGeometryPoint& getPoint(size_t index) { return points_.at(index); }
-    const RoadGeometryPoint& getPoint(size_t index) const { return points_.at(index); }
+    RoadGeometryPoint& pointAt(size_t index) { return points_.at(index); }
+    const RoadGeometryPoint& pointAt(size_t index) const { return points_.at(index); }
+    const std::vector<RoadGeometryPoint>& points() const { return points_; }
+    QPolygonF laneGeometry(const Lane* lane) const;
 
 private:
     QPointF tangent(const QPointF& p1, const QPointF& p2);

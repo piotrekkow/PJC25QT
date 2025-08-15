@@ -28,7 +28,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout" stretch="0">
     <item>
-     <widget class="QGraphicsView" name="graphicsView"/>
+     <widget class="GraphicsViewPannable" name="graphicsView"/>
     </item>
    </layout>
   </widget>
@@ -44,6 +44,13 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>GraphicsViewPannable</class>
+   <extends>QGraphicsView</extends>
+   <header>graphicsviewpannable.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

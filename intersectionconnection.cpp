@@ -1,3 +1,7 @@
 #include "intersectionconnection.h"
 
-IntersectionConnection::IntersectionConnection() {}
+IntersectionConnection::IntersectionConnection(Lane *source, Lane *destination)
+    : sourceLane_{ source }
+    , destinationLane_{ destination }
+{
+}

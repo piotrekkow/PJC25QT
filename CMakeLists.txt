@@ -30,6 +30,7 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 
     qt_add_executable(PJC2025
         MANUAL_FINALIZATION
@@ -58,11 +59,14 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
 
 
         road.h road.cpp
-        intersectionapproach.h intersectionapproach.cpp
+
         intersectionconnection.h intersectionconnection.cpp
 
         roadgeometrypoint.h roadgeometrypoint.cpp
         roadgeometry.h roadgeometry.cpp
+        simulationview.h simulationview.cpp
+        graphicsviewpannable.h graphicsviewpannable.cpp
+        graphicsviewzoom.h graphicsviewzoom.cpp
 
 
 
@@ -85,11 +89,14 @@ else()
     endif()
 endif()
 
+target_include_directories(PJC2025 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+
 target_link_libraries(PJC2025 PRIVATE
     Qt${QT_VERSION_MAJOR}::Widgets # Changed here - only Widgets
 )
 target_link_libraries(PJC2025 PRIVATE Qt6::Core)
 target_link_libraries(PJC2025 PRIVATE Qt6::Widgets)
+target_link_libraries(PJC2025 PRIVATE Qt6::Core)
 target_link_libraries(PJC2025 PRIVATE Qt6::Core)
 target_link_libraries(PJC2025 PRIVATE Qt6::Core)
 target_link_libraries(PJC2025 PRIVATE Qt6::Core)

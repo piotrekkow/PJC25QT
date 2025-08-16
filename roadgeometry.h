@@ -16,11 +16,4 @@ public:
     RoadGeometryPoint& pointAt(size_t index) { return points_.at(index); }
     const RoadGeometryPoint& pointAt(size_t index) const { return points_.at(index); }
     const std::vector<RoadGeometryPoint>& points() const { return points_; }
-    QPolygonF laneGeometry(const Lane* lane) const;
-    QPointF laneStartPoint(const Lane* lane) const;
-    QPointF laneEndPoint(const Lane* lane) const;
-
-private:
-    QPointF tangent(const QPointF& p1, const QPointF& p2);
-    QPointF calculateLanePoint(const Lane* lane, size_t pointIndex) const;
 };

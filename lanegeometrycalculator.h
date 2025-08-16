@@ -1,0 +1,31 @@
+#pragma once
+
+#include <QPolygonF>
+#include "lane.h"
+#include "roadwaygeometrycalculator.h"
+
+// Forward declarations to avoid including full headers
+class Lane;
+class RoadGeometry;
+
+class LaneGeometryCalculator
+{
+public:
+    // This class should not be instantiated
+    LaneGeometryCalculator() = delete;
+
+
+    /// less expensive version that uses already calculated baseline roadwaygeometry
+    static QPolygonF calculateGeometry(const std::vector<OrientedPoint>& baselineRoadwayGeometry, const Lane* lane, const Roadway* roadway);
+
+    /// more expensive version that calculates baseline roadwaygeometry each call
+    static QPolygonF calculateGeometry(const RoadGeometry& roadGeometry, const Lane* lane, const Roadway* roadway);
+
+    static QPointF calculateStartPoint(const Lane* lane, const std::vector<OrientedPoint>& geometry, const Roadway* roadway);
+    static QPointF calculateEndPoint(const Lane* lane, const std::vector<OrientedPoint>&& geometry, const Roadway* roadway);
+
+private:
+    // The core private helper function, also static
+    static QPointF calculatePointForLane(const std::vector<OrientedPoint>& geometry, const Lane* lane, const Roadway* roadway, size_t pointIndex);
+    static float calculateCumulativeOffset(const Lane* lane, const Roadway* roadway);
+};

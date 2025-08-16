@@ -25,27 +25,3 @@ IntersectionConnection *Lane::addConnection(Lane *target)
     return connections_.back().get();
 }
 
-float Lane::cumulativeOffset() const
-{
-    float offset = 0.0f;
-    const auto& lanes = roadway_->lanes();
-    for (size_t i = 0; i < index(); ++i)
-        offset += lanes[i]->width();
-    offset += width_ / 2.0f;
-    return offset;
-}
-
-size_t Lane::index() const
-{
-    if (!roadway_)
-        throw std::runtime_error("Lane has no parent roadway");
-
-    const auto& lanes = roadway_->lanes(); // vector of unique_ptr<Lane>
-    auto it = std::find_if(lanes.begin(), lanes.end(),
-                           [this](const std::unique_ptr<Lane>& ptr){ return ptr.get() == this; });
-
-    if (it == lanes.end())
-        throw std::runtime_error("Lane not found in parent roadway");
-
-    return static_cast<size_t>(std::distance(lanes.begin(), it));
-}

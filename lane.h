@@ -3,15 +3,9 @@
 #include <optional>
 #include <memory>
 #include "intersectionconnection.h"
-#include <QPointF>
-
-struct RoadwayPoint
-{
-    QPointF position;
-    QPointF normal;
-};
 
 class Roadway;
+
 class Lane
 {
     /// Lane width in meters
@@ -25,9 +19,7 @@ public:
     Lane(Roadway* parent, std::optional<float> length = std::nullopt, float width = 3.5f);
     float width() const { return width_; }
     IntersectionConnection* addConnection(Lane* target);
-    Roadway* roadway() const { return roadway_; }
     const std::vector<std::unique_ptr<IntersectionConnection>>& connections() const { return connections_; }
-    float cumulativeOffset() const;
 
 private:
     size_t index() const;

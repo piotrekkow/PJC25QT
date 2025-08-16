@@ -5,6 +5,8 @@
 #include <QGraphicsLineItem>
 #include <iostream>
 
+#include "lanegeometrycalculator.h"
+
 Renderer::Renderer(QGraphicsScene *scene, const RoadNetwork *network)
     : scene_{ scene }
     , network_{ network }
@@ -30,10 +32,11 @@ void Renderer::draw() const
         for (const auto& roadway : road->roadways())
         {
             std::cerr << "roadway\n";
+            auto roadwayBaseline = RoadwayGeometryCalculator::calculateBaseline(road->geometry(), roadway);
             for (const auto& lane : roadway->lanes())
             {
                 std::cerr << "lane\n";
-                QPolygonF laneGeometry = road->geometry().laneGeometry(lane.get());
+                QPolygonF laneGeometry = LaneGeometryCalculator::calculateGeometry(roadwayBaseline, lane.get(), roadway);
                 scene_->addPolygon(laneGeometry, roadwayPen);
             }
         }

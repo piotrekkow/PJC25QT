@@ -67,6 +67,10 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
         simulationview.h simulationview.cpp
         graphicsviewpannable.h graphicsviewpannable.cpp
         graphicsviewzoom.h graphicsviewzoom.cpp
+        geometryutils.h
+        roadwaygeometrycalculator.h roadwaygeometrycalculator.cpp
+        lanegeometrycalculator.h lanegeometrycalculator.cpp
+        roadwayutils.h roadwayutils.cpp
 
 
 

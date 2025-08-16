@@ -9,6 +9,17 @@ QPolygonF LaneGeometryCalculator::calculateGeometry(const RoadGeometry& roadGeom
     return calculateGeometry(roadwayBaseline, lane, roadway);
 }
 
+QPointF LaneGeometryCalculator::calculateStartPoint(const std::vector<OrientedPoint> &geometry, const Lane *lane, const Roadway *roadway)
+{
+    return calculatePointForLane(geometry, lane, roadway, 0);
+}
+
+QPointF LaneGeometryCalculator::calculateEndPoint(const std::vector<OrientedPoint> &geometry, const Lane *lane, const Roadway *roadway)
+{
+    return calculatePointForLane(geometry, lane, roadway, geometry.size()-1);
+}
+
+
 QPolygonF LaneGeometryCalculator::calculateGeometry(const std::vector<OrientedPoint>& roadwayBaseline, const Lane* lane, const Roadway* roadway)
 {
     const float laneOffset = calculateCumulativeOffset(lane, roadway);

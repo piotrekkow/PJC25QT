@@ -20,6 +20,7 @@ public:
     float width() const { return width_; }
     IntersectionConnection* addConnection(Lane* target);
     const std::vector<std::unique_ptr<IntersectionConnection>>& connections() const { return connections_; }
+    const Roadway* roadway() const { return roadway_; }
 
 private:
     size_t index() const;

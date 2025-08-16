@@ -5,7 +5,7 @@
 #include <QGraphicsLineItem>
 #include <iostream>
 
-#include "lanegeometrycalculator.h"
+#include "intersectionconnectiongeometrycalculator.h"
 
 Renderer::Renderer(QGraphicsScene *scene, const RoadNetwork *network)
     : scene_{ scene }
@@ -19,7 +19,7 @@ void Renderer::draw() const
 
     QPen roadPen(Qt::yellow, 0.25);
     QPen roadwayPen(Qt::white, 0.5);
-    // QPen connectionPen(Qt::green, 0.25);
+    QPen connectionPen(Qt::green, 0.25);
 
     for (const auto& road : network_->roads())
     {
@@ -31,13 +31,18 @@ void Renderer::draw() const
 
         for (const auto& roadway : road->roadways())
         {
-            std::cerr << "roadway\n";
             auto roadwayBaseline = RoadwayGeometryCalculator::calculateBaseline(road->geometry(), roadway);
             for (const auto& lane : roadway->lanes())
             {
-                std::cerr << "lane\n";
                 QPolygonF laneGeometry = LaneGeometryCalculator::calculateGeometry(roadwayBaseline, lane.get(), roadway);
                 scene_->addPolygon(laneGeometry, roadwayPen);
+
+                for (const auto& connection : lane->connections())
+                {
+                    QPointF connectionStartPoint = laneGeometry.back();
+                    QLineF connectionLine = IntersectionConnectionGeometryCalculator::calculateGeometry(connectionStartPoint, connection.get());
+                    scene_->addLine(connectionLine, connectionPen);
+                }
             }
         }
     }

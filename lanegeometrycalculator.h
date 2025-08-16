@@ -1,7 +1,6 @@
 #pragma once
 
 #include <QPolygonF>
-#include "lane.h"
 #include "roadwaygeometrycalculator.h"
 
 // Forward declarations to avoid including full headers
@@ -21,8 +20,8 @@ public:
     /// more expensive version that calculates baseline roadwaygeometry each call
     static QPolygonF calculateGeometry(const RoadGeometry& roadGeometry, const Lane* lane, const Roadway* roadway);
 
-    static QPointF calculateStartPoint(const Lane* lane, const std::vector<OrientedPoint>& geometry, const Roadway* roadway);
-    static QPointF calculateEndPoint(const Lane* lane, const std::vector<OrientedPoint>&& geometry, const Roadway* roadway);
+    static QPointF calculateStartPoint(const std::vector<OrientedPoint> &geometry, const Lane *lane, const Roadway *roadway);
+    static QPointF calculateEndPoint(const std::vector<OrientedPoint> &geometry, const Lane *lane, const Roadway *roadway);
 
 private:
     // The core private helper function, also static

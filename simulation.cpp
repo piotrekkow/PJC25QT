@@ -20,12 +20,12 @@ void Simulation::initialize()
 
     r2->createRoadways();
     r3->createRoadways();
-    r4->createRoadway(is1);
+    r4->createRoadway(is4);
 
     r2->backwardRoadway()->addLane();
-
-    r2->backwardRoadway()->lanes()[0].get()->addConnection(r3->forwardRoadway()->lanes()[0].get());
-
+    r2->backwardRoadway()->lanes()[1].get()->addConnection(r3->forwardRoadway()->lanes()[0].get());
+    r2->backwardRoadway()->lanes()[0].get()->addConnection(r4->forwardRoadway()->lanes()[0].get());
+    r3->backwardRoadway()->lanes()[0].get()->addConnection(r2->forwardRoadway()->lanes()[0].get());
     renderer_->draw();
 }
 

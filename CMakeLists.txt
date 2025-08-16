@@ -71,6 +71,7 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
         roadwaygeometrycalculator.h roadwaygeometrycalculator.cpp
         lanegeometrycalculator.h lanegeometrycalculator.cpp
         roadwayutils.h roadwayutils.cpp
+        intersectionconnectiongeometrycalculator.h intersectionconnectiongeometrycalculator.cpp
 
 
 

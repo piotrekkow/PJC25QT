@@ -1,10 +1,11 @@
 #include "roadway.h"
 #include "road.h"
 
-Roadway::Roadway(Intersection *source, Intersection *destination, RoadwayDirection direction)
+Roadway::Roadway(Road* parent, Intersection *source, Intersection *destination, RoadwayDirection direction)
     : sourceIntersection_{ source }
     , destinationIntersection_{ destination }
     , direction_{ direction }
+    , road_{ parent }
 {
     addLane();
 }

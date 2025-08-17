@@ -41,10 +41,17 @@ void Simulation::initialize()
     r3->backwardRoadway()->lanes()[0].get()->addConnection(r5->forwardRoadway()->lanes()[0].get());
     r5->backwardRoadway()->lanes()[0].get()->addConnection(r2->forwardRoadway()->lanes()[0].get());
 
+    network_->createVehicle(r2->backwardRoadway()->lanes()[0].get());
+    network_->createVehicle(r3->backwardRoadway()->lanes()[0].get());
+
     renderer_->draw();
 }
 
 void Simulation::update(float deltaTime)
 {
-    Q_UNUSED(deltaTime);
+    for (const auto& vehicle : network_->vehicles())
+    {
+        vehicle->update(deltaTime);
+    }
+    renderer_->draw();
 }

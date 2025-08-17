@@ -73,6 +73,7 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
         roadwayutils.h roadwayutils.cpp
 
         geometrymanager.h geometrymanager.cpp
+        vehicle.h vehicle.cpp
 
 
 

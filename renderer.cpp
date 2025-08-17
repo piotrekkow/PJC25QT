@@ -43,6 +43,20 @@ void Renderer::draw() const
             scene_->addPath(geometry->roadway(roadway), roadwayPen);
         }
     }
+
+    for (const auto& vehicle : network_->vehicles())
+    {
+        QGraphicsRectItem* vehicleRect = new QGraphicsRectItem(
+            -vehicle->length() / 2, -vehicle->width() / 2,
+            vehicle->length(), vehicle->width()
+            );
+        vehicleRect->setPen(Qt::NoPen);
+        vehicleRect->setBrush(QBrush(vehicle->color()));
+        vehicleRect->setPos(vehicle->position());
+        // The angle from QPainterPath is counter-clockwise, so we negate it.
+        vehicleRect->setRotation(-vehicle->angle());
+        scene_->addItem(vehicleRect);
+    }
 }
 
 

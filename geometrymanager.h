@@ -4,6 +4,7 @@
 #include <vector>
 
 #include <QPolygonF>
+#include <QPainterPath>
 #include <QLineF>
 
 #include "roadwaygeometrycalculator.h" // For OrientedPoint struct
@@ -26,8 +27,9 @@ class GeometryManager
 {
     RoadNetwork* network_;
     mutable std::unordered_map<const Roadway*, std::vector<OrientedPoint>> roadwayBaselineCache_;
-    mutable std::unordered_map<const Lane*, QPolygonF> laneGeometryCache_;
-    mutable std::unordered_map<const IntersectionConnection*, QLineF> connectionGeometryCache_;
+    mutable std::unordered_map<const Roadway*, QPainterPath> roadwayGeometryCache_;
+    mutable std::unordered_map<const Lane*, QPainterPath> laneGeometryCache_;
+    mutable std::unordered_map<const IntersectionConnection*, QPainterPath> connectionGeometryCache_;
 
 public:
     explicit GeometryManager(RoadNetwork* network);
@@ -37,8 +39,9 @@ public:
     // If the geometry is not in the cache, they calculate it, store it, and then return it.
 
     const std::vector<OrientedPoint>& roadwayBaseline(const Roadway* roadway) const;
-    const QPolygonF& lane(const Lane* lane) const;
-    const QLineF& connection(const IntersectionConnection* connection) const;
+    const QPainterPath& roadway(const Roadway* roadway) const;
+    const QPainterPath& lane(const Lane* lane) const;
+    const QPainterPath& connection(const IntersectionConnection* connection) const;
 
     /**
      * @brief Invalidates all cached geometry associated with a specific road.
@@ -54,6 +57,7 @@ public:
 
 private:
     const std::vector<OrientedPoint>& calculateAndCacheRoadwayBaseline(const Roadway* roadway) const;
-    const QPolygonF& calculateAndCacheLaneGeometry(const Lane* lane) const;
-    const QLineF& calculateAndCacheConnectionGeometry(const IntersectionConnection* connection) const;
+    const QPainterPath& calculateAndCacheRoadway(const Roadway* roadway) const;
+    const QPainterPath& calculateAndCacheLaneGeometry(const Lane* lane) const;
+    const QPainterPath& calculateAndCacheConnectionGeometry(const IntersectionConnection* connection) const;
 };

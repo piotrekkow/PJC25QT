@@ -15,39 +15,33 @@ void Renderer::draw() const
 {
     scene_->clear();
     auto geometry = network_->geometry();
-    qreal intersectionSize = 5.0;
+    qreal intersectionSize = 25.0;
 
-    QPen roadPen(Qt::yellow, 0.25);
-    QPen roadwayPen(Qt::white, 0.5);
-    QPen connectionPen(Qt::green, 0.25);
-
-    for (const auto& road : network_->roads())
-    {
-        QPointF startPos{ road->geometry().points().front().position() };
-        QPointF endPos{ road->geometry().points().back().position() };
-
-        QLineF roadLine = QLineF(startPos, endPos);
-        scene_->addLine(roadLine, roadPen);
-
-        for (const auto& roadway : road->roadways())
-        {
-            for (const auto& lane : roadway->lanes())
-            {
-                scene_->addPolygon(geometry->lane(lane.get()), roadwayPen);
-                for (const auto& connection : lane->connections())
-                {
-                    scene_->addLine(geometry->connection(connection.get()), connectionPen);
-                }
-            }
-        }
-    }
-
+    QPen roadwayPen(Qt::yellow, 0.25);
+    QPen connectionPen(Qt::white, 0.25);
 
     // Draw intersections
     for (const auto& intersection : network_->intersections())
     {
         QRectF rect(intersection->position().x() - intersectionSize / 2, intersection->position().y() - intersectionSize / 2, intersectionSize, intersectionSize);
-        scene_->addEllipse(rect, QPen(Qt::cyan));
+        scene_->addEllipse(rect, QPen(Qt::darkYellow));
+    }
+
+    // Draw roads
+    for (const auto& road : network_->roads())
+    {
+        for (const auto& roadway : road->roadways())
+        {
+            for (const auto& lane : roadway->lanes())
+            {
+                for (const auto& connection : lane->connections())
+                {
+                    scene_->addPath(geometry->connection(connection.get()), connectionPen);
+                }
+                scene_->addPath(geometry->lane(lane.get()), QPen(Qt::gray, lane->width() * 0.5));
+            }
+            scene_->addPath(geometry->roadway(roadway), roadwayPen);
+        }
     }
 }
 

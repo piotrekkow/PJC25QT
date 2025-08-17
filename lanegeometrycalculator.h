@@ -1,6 +1,6 @@
 #pragma once
 
-#include <QPolygonF>
+#include <QPainterPath>
 #include "roadwaygeometrycalculator.h"
 
 // Forward declarations to avoid including full headers
@@ -13,12 +13,11 @@ public:
     // This class should not be instantiated
     LaneGeometryCalculator() = delete;
 
-
     /// less expensive version that uses already calculated baseline roadwaygeometry
-    static QPolygonF calculateGeometry(const std::vector<OrientedPoint>& baselineRoadwayGeometry, const Lane* lane, const Roadway* roadway);
+    static QPainterPath calculateGeometry(const std::vector<OrientedPoint>& baselineRoadwayGeometry, const Lane* lane, const Roadway* roadway);
 
     /// more expensive version that calculates baseline roadwaygeometry each call
-    static QPolygonF calculateGeometry(const RoadGeometry& roadGeometry, const Lane* lane, const Roadway* roadway);
+    static QPainterPath calculateGeometry(const RoadGeometry& roadGeometry, const Lane* lane, const Roadway* roadway);
 
     static QPointF calculateStartPoint(const std::vector<OrientedPoint> &geometry, const Lane *lane, const Roadway *roadway);
     static QPointF calculateEndPoint(const std::vector<OrientedPoint> &geometry, const Lane *lane, const Roadway *roadway);

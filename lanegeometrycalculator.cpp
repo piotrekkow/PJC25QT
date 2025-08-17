@@ -3,7 +3,7 @@
 #include "lane.h"
 #include "roadwayutils.h"
 
-QPolygonF LaneGeometryCalculator::calculateGeometry(const RoadGeometry& roadGeometry, const Lane* lane, const Roadway* roadway)
+QPainterPath LaneGeometryCalculator::calculateGeometry(const RoadGeometry& roadGeometry, const Lane* lane, const Roadway* roadway)
 {
     std::vector<OrientedPoint> roadwayBaseline = RoadwayGeometryCalculator::calculateBaseline(roadGeometry, roadway);
     return calculateGeometry(roadwayBaseline, lane, roadway);
@@ -20,18 +20,26 @@ QPointF LaneGeometryCalculator::calculateEndPoint(const std::vector<OrientedPoin
 }
 
 
-QPolygonF LaneGeometryCalculator::calculateGeometry(const std::vector<OrientedPoint>& roadwayBaseline, const Lane* lane, const Roadway* roadway)
+QPainterPath LaneGeometryCalculator::calculateGeometry(const std::vector<OrientedPoint>& roadwayBaseline, const Lane* lane, const Roadway* roadway)
 {
+    if (roadwayBaseline.empty())
+    {
+        return QPainterPath();
+    }
+
     const float laneOffset = calculateCumulativeOffset(lane, roadway);
 
-    QPolygonF lanePolyline;
-    lanePolyline.reserve(roadwayBaseline.size());
+    QPainterPath lanePath;
+    QPointF firstPoint = roadwayBaseline.front().position + roadwayBaseline.front().normal * laneOffset;
+    lanePath.moveTo(firstPoint);
 
-    for (const auto& baselinePoint : roadwayBaseline)
+    for (size_t i = 1; i < roadwayBaseline.size(); ++i)
     {
-        lanePolyline << baselinePoint.position + baselinePoint.normal * laneOffset;
+        const auto& baselinePoint = roadwayBaseline[i];
+        lanePath.lineTo(baselinePoint.position + baselinePoint.normal * laneOffset);
     }
-    return lanePolyline;
+
+    return lanePath;
 }
 
 QPointF LaneGeometryCalculator::calculatePointForLane(const std::vector<OrientedPoint> &geometry, const Lane *lane, const Roadway *roadway, size_t pointIndex)

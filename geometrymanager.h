@@ -24,16 +24,11 @@ class IntersectionConnection;
  */
 class GeometryManager
 {
-    // A raw pointer is fine here as the manager's lifetime is tied to the RoadNetwork's.
     RoadNetwork* network_;
-
-    // --- Caches ---
-    // We use raw pointers as keys. This is safe because the lifetime of the topology objects
-    // is managed by the RoadNetwork, which outlives the GeometryManager.
-
     mutable std::unordered_map<const Roadway*, std::vector<OrientedPoint>> roadwayBaselineCache_;
     mutable std::unordered_map<const Lane*, QPolygonF> laneGeometryCache_;
     mutable std::unordered_map<const IntersectionConnection*, QLineF> connectionGeometryCache_;
+
 public:
     explicit GeometryManager(RoadNetwork* network);
 
@@ -44,8 +39,6 @@ public:
     const std::vector<OrientedPoint>& roadwayBaseline(const Roadway* roadway) const;
     const QPolygonF& lane(const Lane* lane) const;
     const QLineF& connection(const IntersectionConnection* connection) const;
-
-    // --- Cache Management ---
 
     /**
      * @brief Invalidates all cached geometry associated with a specific road.
@@ -60,9 +53,6 @@ public:
     void clearAll();
 
 private:
-    // --- Private Calculation Methods ---
-    // These methods perform the actual calculations using the stateless calculators.
-
     const std::vector<OrientedPoint>& calculateAndCacheRoadwayBaseline(const Roadway* roadway) const;
     const QPolygonF& calculateAndCacheLaneGeometry(const Lane* lane) const;
     const QLineF& calculateAndCacheConnectionGeometry(const IntersectionConnection* connection) const;

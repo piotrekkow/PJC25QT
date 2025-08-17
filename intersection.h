@@ -1,9 +1,6 @@
 #pragma once
 
-#include "intersectionapproach.h"
 #include <QPointF>
-// #include <unordered_map>
-// #include <ranges>
 
 class Road;
 

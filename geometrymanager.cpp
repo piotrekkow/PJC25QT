@@ -9,7 +9,6 @@
 
 // And your stateless calculators
 #include "lanegeometrycalculator.h"
-#include "intersectionconnectiongeometrycalculator.h"
 
 GeometryManager::GeometryManager(RoadNetwork* network)
     : network_{ network }
@@ -105,11 +104,15 @@ const QPolygonF& GeometryManager::calculateAndCacheLaneGeometry(const Lane* lane
 
 const QLineF& GeometryManager::calculateAndCacheConnectionGeometry(const IntersectionConnection* connection) const
 {
-    // To calculate the connection, we need the end point of the source lane
-    const auto& sourceLaneGeom = lane(connection->source());
-    QPointF sourceEndPoint = sourceLaneGeom.back();
+    const QPolygonF& sourceLaneGeom = lane(connection->source());
+    const QPolygonF& destLaneGeom = lane(connection->destination());
 
-    // Now, calculate the connection geometry
-    auto connectionGeom = IntersectionConnectionGeometryCalculator::calculateGeometry(sourceEndPoint, connection);
+    if (sourceLaneGeom.isEmpty() || destLaneGeom.isEmpty())
+        std::runtime_error("Could not get lane geometry for connection calculation.");
+
+    QPointF sourceEndPoint = sourceLaneGeom.back();
+    QPointF destStartPoint = destLaneGeom.front();
+
+    QLineF connectionGeom(sourceEndPoint, destStartPoint);
     return connectionGeometryCache_.emplace(connection, std::move(connectionGeom)).first->second;
 }

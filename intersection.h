@@ -18,6 +18,4 @@ public:
     const std::vector<Road*>& roads() const { return roads_; }
 
     void addRoad(Road *road);
-
-private:
 };

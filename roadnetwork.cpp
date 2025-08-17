@@ -2,7 +2,10 @@
 #include "intersection.h"
 #include <QDebug>
 
-RoadNetwork::RoadNetwork() {}
+RoadNetwork::RoadNetwork()
+{
+    geometryManager_ = std::make_unique<GeometryManager>(this);
+}
 
 RoadNetwork::~RoadNetwork() = default;
 

@@ -3,9 +3,8 @@
 #include "intersection.h"
 #include <QGraphicsEllipseItem>
 #include <QGraphicsLineItem>
-#include <iostream>
 
-#include "intersectionconnectiongeometrycalculator.h"
+#include "geometrymanager.h"
 
 Renderer::Renderer(QGraphicsScene *scene, const RoadNetwork *network)
     : scene_{ scene }
@@ -15,6 +14,7 @@ Renderer::Renderer(QGraphicsScene *scene, const RoadNetwork *network)
 void Renderer::draw() const
 {
     scene_->clear();
+    auto geometry = network_->geometry();
     qreal intersectionSize = 5.0;
 
     QPen roadPen(Qt::yellow, 0.25);
@@ -31,17 +31,12 @@ void Renderer::draw() const
 
         for (const auto& roadway : road->roadways())
         {
-            auto roadwayBaseline = RoadwayGeometryCalculator::calculateBaseline(road->geometry(), roadway);
             for (const auto& lane : roadway->lanes())
             {
-                QPolygonF laneGeometry = LaneGeometryCalculator::calculateGeometry(roadwayBaseline, lane.get(), roadway);
-                scene_->addPolygon(laneGeometry, roadwayPen);
-
+                scene_->addPolygon(geometry->lane(lane.get()), roadwayPen);
                 for (const auto& connection : lane->connections())
                 {
-                    QPointF connectionStartPoint = laneGeometry.back();
-                    QLineF connectionLine = IntersectionConnectionGeometryCalculator::calculateGeometry(connectionStartPoint, connection.get());
-                    scene_->addLine(connectionLine, connectionPen);
+                    scene_->addLine(geometry->connection(connection.get()), connectionPen);
                 }
             }
         }

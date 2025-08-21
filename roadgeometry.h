@@ -10,7 +10,7 @@ class RoadGeometry
 {
     std::vector<RoadGeometryPoint> points_;
 public:
-    RoadGeometry(Road* road, float startOffset = 10.0f, float endOffset = 10.0f);
+    RoadGeometry(Road* road, qreal startOffset = 10.0f, qreal endOffset = 10.0f);
     void addPoint(QPointF position, size_t index);
 
     RoadGeometryPoint& pointAt(size_t index) { return points_.at(index); }

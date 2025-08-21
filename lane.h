@@ -2,23 +2,23 @@
 #include <vector>
 #include <optional>
 #include <memory>
-#include "intersectionconnection.h"
+#include "connection.h"
 
 class Roadway;
 
 class Lane
 {
     /// Lane width in meters
-    float width_;
+    qreal width_;
     /// Full length lanes (taking up the entire length of a roadway) don't have this value.
-    std::optional<float> length_;
+    std::optional<qreal> length_;
     Roadway* roadway_;
-    std::vector<std::unique_ptr<IntersectionConnection>> connections_;
+    std::vector<Connection*> connections_;
 
 public:
-    Lane(Roadway* parent, std::optional<float> length = std::nullopt, float width = 3.5f);
-    float width() const { return width_; }
-    IntersectionConnection* addConnection(Lane* target);
-    const std::vector<std::unique_ptr<IntersectionConnection>>& connections() const { return connections_; }
+    Lane(Roadway* parent, std::optional<qreal> length = std::nullopt, qreal width = 3.5f);
+    qreal width() const { return width_; }
+    void addOutgoingConnection(Connection* connection);
+    const std::vector<Connection*>& connections() const { return connections_; }
     const Roadway* roadway() const { return roadway_; }
 };

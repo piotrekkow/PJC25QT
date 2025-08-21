@@ -2,7 +2,7 @@
 #include "lane.h"
 #include "geometrymanager.h"
 
-Vehicle::Vehicle(GeometryManager* networkGeometry, Lane* initialLane, float initialPosition)
+Vehicle::Vehicle(GeometryManager* networkGeometry, Lane* initialLane, qreal initialPosition)
     : networkGeometry_{ networkGeometry },
     state_{DrivingState::ON_LANE},
     currentLane_{initialLane},
@@ -17,7 +17,7 @@ Vehicle::Vehicle(GeometryManager* networkGeometry, Lane* initialLane, float init
     updatePositionAndAngle();
 }
 
-void Vehicle::update(float deltaTime)
+void Vehicle::update(qreal deltaTime)
 {
     // Simple acceleration model
     if (currentSpeed_ < targetSpeed_)
@@ -39,7 +39,7 @@ void Vehicle::update(float deltaTime)
             if (!connections.empty())
             {
                 // Transition to the connection
-                currentConnection_ = connections[0].get(); // Take the first connection for simplicity
+                currentConnection_ = connections[0]; // Take the first connection for simplicity
                 state_ = DrivingState::ON_CONNECTION;
                 progress_ -= laneLength; // Carry over the remaining progress
             }

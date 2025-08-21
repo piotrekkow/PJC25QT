@@ -12,5 +12,5 @@ public:
     Simulation(QGraphicsScene* scene);
 
     void initialize();
-    void update(float deltaTime);
+    void update(qreal deltaTime);
 };

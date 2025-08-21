@@ -4,7 +4,7 @@
 #include <QColor>
 
 class Lane; // Forward declaration to avoid circular dependencies
-class IntersectionConnection;
+class Connection;
 class GeometryManager;
 
 enum class DrivingState {
@@ -15,16 +15,16 @@ enum class DrivingState {
 class Vehicle
 {
 public:
-    Vehicle(GeometryManager* networkGeometry, Lane* initialLane, float initialPosition = 0.0f);
+    Vehicle(GeometryManager* networkGeometry, Lane* initialLane, qreal initialPosition = 0.0f);
 
-    void update(float deltaTime);
+    void update(qreal deltaTime);
 
     // --- Getters ---
     QPointF position() const { return position_; }
-    float angle() const { return angle_; }
+    qreal angle() const { return angle_; }
     QColor color() const { return color_; }
-    float length() const { return length_; }
-    float width() const { return width_; }
+    qreal length() const { return length_; }
+    qreal width() const { return width_; }
 
 private:
     void updatePositionAndAngle();
@@ -32,17 +32,17 @@ private:
     GeometryManager* networkGeometry_;
     DrivingState state_;
     Lane* currentLane_;
-    IntersectionConnection* currentConnection_;
-    float progress_; // Distance from the start of the lane in meters
+    Connection* currentConnection_;
+    qreal progress_; // Distance from the start of the lane in meters
 
-    float currentSpeed_; // in m/s
-    float targetSpeed_;  // in m/s
+    qreal currentSpeed_; // in m/s
+    qreal targetSpeed_;  // in m/s
 
     QPointF position_;
-    float angle_;      // in degrees
+    qreal angle_;      // in degrees
 
     // --- Vehicle Properties ---
     QColor color_;
-    float length_;
-    float width_;
+    qreal length_;
+    qreal width_;
 };

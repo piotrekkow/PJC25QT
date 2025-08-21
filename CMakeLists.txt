@@ -60,7 +60,7 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
 
         road.h road.cpp
 
-        intersectionconnection.h intersectionconnection.cpp
+        connection.h connection.cpp
 
         roadgeometrypoint.h roadgeometrypoint.cpp
         roadgeometry.h roadgeometry.cpp
@@ -74,6 +74,11 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
 
         geometrymanager.h geometrymanager.cpp
         vehicle.h vehicle.cpp
+        conflictpoint.h conflictpoint.cpp
+        conflictgeometrycalculator.h conflictgeometrycalculator.cpp
+        intersectioncontroltype.h
+        conflictmanager.h conflictmanager.cpp
+        iintersectioncontroller.h iintersectioncontroller.cpp
 
 
 

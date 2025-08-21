@@ -17,6 +17,7 @@ public:
 private:
 
     void drawArrow(QLineF baseline, qreal quiverLength, qreal quiverAngleDeg, QPen pen) const;
+    void drawCircle(QPointF position, qreal diameter, QPen pen) const;
 
     QLineF offsetLine(const QLineF& line, qreal offset) const;
 };

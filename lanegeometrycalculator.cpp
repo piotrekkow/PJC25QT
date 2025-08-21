@@ -27,7 +27,7 @@ QPainterPath LaneGeometryCalculator::calculateGeometry(const std::vector<Oriente
         return QPainterPath();
     }
 
-    const float laneOffset = calculateCumulativeOffset(lane, roadway);
+    const qreal laneOffset = calculateCumulativeOffset(lane, roadway);
 
     QPainterPath lanePath;
     QPointF firstPoint = roadwayBaseline.front().position + roadwayBaseline.front().normal * laneOffset;
@@ -44,13 +44,13 @@ QPainterPath LaneGeometryCalculator::calculateGeometry(const std::vector<Oriente
 
 QPointF LaneGeometryCalculator::calculatePointForLane(const std::vector<OrientedPoint> &geometry, const Lane *lane, const Roadway *roadway, size_t pointIndex)
 {
-    const float laneOffset = calculateCumulativeOffset(lane, roadway);
+    const qreal laneOffset = calculateCumulativeOffset(lane, roadway);
     return { geometry[pointIndex].position + geometry[pointIndex].normal * laneOffset };
 }
 
-float LaneGeometryCalculator::calculateCumulativeOffset(const Lane* lane, const Roadway* roadway)
+qreal LaneGeometryCalculator::calculateCumulativeOffset(const Lane* lane, const Roadway* roadway)
 {
-    float offset = 0.0f;
+    qreal offset = 0.0f;
     const size_t laneIndex = RoadwayUtils::getLaneIndex(lane, roadway);
     const auto& allLanes = roadway->lanes();
 

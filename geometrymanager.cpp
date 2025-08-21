@@ -5,7 +5,7 @@
 #include "road.h"
 #include "roadway.h"
 #include "lane.h"
-#include "intersectionconnection.h"
+#include "connection.h"
 
 // And your stateless calculators
 #include "lanegeometrycalculator.h"
@@ -47,7 +47,7 @@ const QPainterPath& GeometryManager::lane(const Lane* lane) const
     return calculateAndCacheLaneGeometry(lane);
 }
 
-const QPainterPath& GeometryManager::connection(const IntersectionConnection* connection) const
+const QPainterPath& GeometryManager::connection(const Connection* connection) const
 {
     if (auto it = connectionGeometryCache_.find(connection); it != connectionGeometryCache_.end())
     {
@@ -78,7 +78,7 @@ void GeometryManager::invalidate(const Road* road)
             for (const auto& connection : lane->connections())
             {
                 // Erase the connection geometry from the cache
-                connectionGeometryCache_.erase(connection.get());
+                connectionGeometryCache_.erase(connection);
             }
         }
     }
@@ -148,7 +148,7 @@ const QPainterPath& GeometryManager::calculateAndCacheLaneGeometry(const Lane* l
 
 // ... inside the GeometryManager class
 
-const QPainterPath& GeometryManager::calculateAndCacheConnectionGeometry(const IntersectionConnection* connection) const
+const QPainterPath& GeometryManager::calculateAndCacheConnectionGeometry(const Connection* connection) const
 {
     const QPainterPath& sourceLaneGeom = lane(connection->source());
     const QPainterPath& destLaneGeom = lane(connection->destination());

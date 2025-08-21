@@ -16,15 +16,27 @@ void Renderer::draw() const
     scene_->clear();
     auto geometry = network_->geometry();
     qreal intersectionSize = 25.0;
+    // qreal cpSize = 2.0;
 
     QPen roadwayPen(Qt::yellow, 0.25);
     QPen connectionPen(Qt::white, 0.25);
 
+
     // Draw intersections
     for (const auto& intersection : network_->intersections())
     {
-        QRectF rect(intersection->position().x() - intersectionSize / 2, intersection->position().y() - intersectionSize / 2, intersectionSize, intersectionSize);
-        scene_->addEllipse(rect, QPen(Qt::darkYellow));
+        drawCircle(intersection->position(), intersectionSize, QPen(Qt::darkYellow));
+
+        for (const auto& connection : intersection->connections())
+        {
+            scene_->addPath(geometry->connection(connection.get()), connectionPen);
+        }
+
+        // for (const auto& cp : intersection->conflictManager()->conflicts())
+        // {
+        //     drawCircle(cp->position(), cpSize, QPen(Qt::red));
+        // }
+
     }
 
     // Draw roads
@@ -34,10 +46,6 @@ void Renderer::draw() const
         {
             for (const auto& lane : roadway->lanes())
             {
-                for (const auto& connection : lane->connections())
-                {
-                    scene_->addPath(geometry->connection(connection.get()), connectionPen);
-                }
                 scene_->addPath(geometry->lane(lane.get()), QPen(Qt::gray, lane->width() * 0.5));
             }
             scene_->addPath(geometry->roadway(roadway), roadwayPen);
@@ -81,6 +89,12 @@ void Renderer::drawArrow(QLineF baseline, qreal arrowheadLength, qreal arrowhead
 
     scene_->addLine(arrowHeadLine1, pen);
     scene_->addLine(arrowHeadLine2, pen);
+}
+
+void Renderer::drawCircle(QPointF position, qreal diameter, QPen pen) const
+{
+    QRectF rect(position.x() - diameter / 2, position.y() - diameter / 2, diameter, diameter);
+    scene_->addEllipse(rect, pen);
 }
 
 QLineF Renderer::offsetLine(const QLineF& line, qreal offset) const

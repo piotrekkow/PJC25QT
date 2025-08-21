@@ -8,17 +8,17 @@ class GraphicsViewZoom : public QObject
     Q_OBJECT
 public:
     explicit GraphicsViewZoom(QGraphicsView* view);
-    float getZoomLevel() const;
+    qreal getZoomLevel() const;
 
 private:
     QGraphicsView* view_;
-    float baseZoomFactor_;
-    float zoomLevel_;
+    qreal baseZoomFactor_;
+    qreal zoomLevel_;
     QPointF targetScenePos_, targetViewportPos_;
     bool eventFilter(QObject* object, QEvent* event);
 
 signals:
-    void zoomed(float currentZoom);
+    void zoomed(qreal currentZoom);
 
 public slots:
     void resetZoom();

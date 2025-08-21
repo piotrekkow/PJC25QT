@@ -25,5 +25,5 @@ public:
 private:
     // The core private helper function, also static
     static QPointF calculatePointForLane(const std::vector<OrientedPoint>& geometry, const Lane* lane, const Roadway* roadway, size_t pointIndex);
-    static float calculateCumulativeOffset(const Lane* lane, const Roadway* roadway);
+    static qreal calculateCumulativeOffset(const Lane* lane, const Roadway* roadway);
 };

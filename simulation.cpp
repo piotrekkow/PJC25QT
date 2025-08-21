@@ -30,24 +30,27 @@ void Simulation::initialize()
     r3->geometry().addPoint({50, -10}, 1);
 
     r2->backwardRoadway()->addLane();
-    auto conn2130 = r2->backwardRoadway()->lanes()[1].get()->addConnection(r3->forwardRoadway()->lanes()[0].get());
+    auto conn2130 = is1->createConnection(r2->backwardRoadway()->lanes()[1].get(), r3->forwardRoadway()->lanes()[0].get());
     conn2130->sourceOffset(2.0f);
-    r2->backwardRoadway()->lanes()[0].get()->addConnection(r4->forwardRoadway()->lanes()[0].get());
-    auto conn3020 = r3->backwardRoadway()->lanes()[0].get()->addConnection(r2->forwardRoadway()->lanes()[0].get());
-    r3->backwardRoadway()->lanes()[0].get()->addConnection(r4->forwardRoadway()->lanes()[0].get());
+
+    is1->createConnection(r2->backwardRoadway()->lanes()[0].get(), r4->forwardRoadway()->lanes()[0].get());
+
+    auto conn3020 = is1->createConnection(r3->backwardRoadway()->lanes()[0].get(), r2->forwardRoadway()->lanes()[0].get());
+    is1->createConnection(r3->backwardRoadway()->lanes()[0].get(), r4->forwardRoadway()->lanes()[0].get());
     conn3020->destinationOffset(3.0f);
 
-    r5->backwardRoadway()->lanes()[0].get()->addConnection(r3->forwardRoadway()->lanes()[0].get());
-    r3->backwardRoadway()->lanes()[0].get()->addConnection(r5->forwardRoadway()->lanes()[0].get());
-    r5->backwardRoadway()->lanes()[0].get()->addConnection(r2->forwardRoadway()->lanes()[0].get());
+    is1->createConnection(r5->backwardRoadway()->lanes()[0].get(), r3->forwardRoadway()->lanes()[0].get());
+    is1->createConnection(r3->backwardRoadway()->lanes()[0].get(), r5->forwardRoadway()->lanes()[0].get());
+    is1->createConnection(r5->backwardRoadway()->lanes()[0].get(), r2->forwardRoadway()->lanes()[0].get());
 
     network_->createVehicle(r2->backwardRoadway()->lanes()[0].get());
     network_->createVehicle(r3->backwardRoadway()->lanes()[0].get());
 
+    is1->conflictManager()->recalculate();
     renderer_->draw();
 }
 
-void Simulation::update(float deltaTime)
+void Simulation::update(qreal deltaTime)
 {
     for (const auto& vehicle : network_->vehicles())
     {

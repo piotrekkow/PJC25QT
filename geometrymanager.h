@@ -14,7 +14,7 @@ class RoadNetwork;
 class Road;
 class Roadway;
 class Lane;
-class IntersectionConnection;
+class Connection;
 
 /**
  * @brief A centralized manager for calculating, caching, and querying road network geometry.
@@ -29,7 +29,7 @@ class GeometryManager
     mutable std::unordered_map<const Roadway*, std::vector<OrientedPoint>> roadwayBaselineCache_;
     mutable std::unordered_map<const Roadway*, QPainterPath> roadwayGeometryCache_;
     mutable std::unordered_map<const Lane*, QPainterPath> laneGeometryCache_;
-    mutable std::unordered_map<const IntersectionConnection*, QPainterPath> connectionGeometryCache_;
+    mutable std::unordered_map<const Connection*, QPainterPath> connectionGeometryCache_;
 
 public:
     explicit GeometryManager(RoadNetwork* network);
@@ -41,7 +41,7 @@ public:
     const std::vector<OrientedPoint>& roadwayBaseline(const Roadway* roadway) const;
     const QPainterPath& roadway(const Roadway* roadway) const;
     const QPainterPath& lane(const Lane* lane) const;
-    const QPainterPath& connection(const IntersectionConnection* connection) const;
+    const QPainterPath& connection(const Connection* connection) const;
 
     /**
      * @brief Invalidates all cached geometry associated with a specific road.
@@ -59,5 +59,5 @@ private:
     const std::vector<OrientedPoint>& calculateAndCacheRoadwayBaseline(const Roadway* roadway) const;
     const QPainterPath& calculateAndCacheRoadway(const Roadway* roadway) const;
     const QPainterPath& calculateAndCacheLaneGeometry(const Lane* lane) const;
-    const QPainterPath& calculateAndCacheConnectionGeometry(const IntersectionConnection* connection) const;
+    const QPainterPath& calculateAndCacheConnectionGeometry(const Connection* connection) const;
 };

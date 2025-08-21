@@ -5,7 +5,7 @@
 /**
  * Basic constructor for road geometry, assumes straight connection between intersections, end point intersection offset of 10m
 */
-RoadGeometry::RoadGeometry(Road* road, float startOffset, float endOffset)
+RoadGeometry::RoadGeometry(Road* road, qreal startOffset, qreal endOffset)
 {
     const QPointF startPos = road->startIntersection()->position();
     const QPointF endPos = road->endIntersection()->position();

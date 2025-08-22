@@ -41,7 +41,10 @@ void Simulation::initialize()
 
     is1->createConnection(r5->backwardRoadway()->lanes()[0].get(), r3->forwardRoadway()->lanes()[0].get());
     is1->createConnection(r3->backwardRoadway()->lanes()[0].get(), r5->forwardRoadway()->lanes()[0].get());
-    is1->createConnection(r5->backwardRoadway()->lanes()[0].get(), r2->forwardRoadway()->lanes()[0].get());
+    auto conn5020 = is1->createConnection(r5->backwardRoadway()->lanes()[0].get(), r2->forwardRoadway()->lanes()[0].get());
+    conn5020->destinationOffset(1.0f);
+
+    is1->createConnection(r2->backwardRoadway()->lanes()[0].get(), r5->forwardRoadway()->lanes()[0].get());
 
     network_->createVehicle(r2->backwardRoadway()->lanes()[0].get());
     network_->createVehicle(r3->backwardRoadway()->lanes()[0].get());

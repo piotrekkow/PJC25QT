@@ -1,9 +1,11 @@
 #include "intersection.h"
 #include "roadway.h"
 
-Intersection::Intersection(QPointF position)
+Intersection::Intersection(QPointF position, GeometryManager* geometry)
     : position_{ position }
-{}
+{
+    conflictManager_ = std::make_unique<ConflictManager>(this, geometry);
+}
 
 void Intersection::addRoad(Road *road)
 {

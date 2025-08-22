@@ -32,7 +32,6 @@ private:
         virtual qreal length() const = 0;
         virtual qreal distanceToPoint(const QPointF& p) const = 0;
 
-        // Double dispatch
         virtual std::vector<QPointF> intersect(const Segment& other, qreal tol) const = 0;
         virtual std::vector<QPointF> intersectWith(const LineSegment& other, qreal tol) const = 0;
         virtual std::vector<QPointF> intersectWith(const QuadraticSegment& other, qreal tol) const = 0;

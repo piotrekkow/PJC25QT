@@ -22,7 +22,7 @@ class Intersection
 
 
 public:
-    Intersection(QPointF position);
+    Intersection(QPointF position, GeometryManager* geometry);
     QPointF position() const { return position_; }
     const std::vector<Road*>& roads() const { return roads_; }
     const std::vector<std::unique_ptr<Connection>>& connections() const { return connections_; }

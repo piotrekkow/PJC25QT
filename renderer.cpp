@@ -16,10 +16,11 @@ void Renderer::draw() const
     scene_->clear();
     auto geometry = network_->geometry();
     qreal intersectionSize = 25.0;
-    // qreal cpSize = 2.0;
+    qreal cpSize = 0.5;
 
     QPen roadwayPen(Qt::yellow, 0.25);
     QPen connectionPen(Qt::white, 0.25);
+    QPen cpPen(Qt::red, 0.1);
 
 
     // Draw intersections
@@ -32,10 +33,13 @@ void Renderer::draw() const
             scene_->addPath(geometry->connection(connection.get()), connectionPen);
         }
 
-        // for (const auto& cp : intersection->conflictManager()->conflicts())
-        // {
-        //     drawCircle(cp->position(), cpSize, QPen(Qt::red));
-        // }
+        for (const auto& cp : intersection->conflictManager()->conflicts())
+        {
+            if (cp->classify() == ConflictPoint::ConflictType::Crossing) cpPen.setColor(Qt::red);
+            else if (cp->classify() == ConflictPoint::ConflictType::Merging) cpPen.setColor(Qt::magenta);
+            else cpPen.setColor(Qt::gray);
+            drawCircle(cp->position(), cpSize, cpPen);
+        }
 
     }
 
@@ -44,10 +48,10 @@ void Renderer::draw() const
     {
         for (const auto& roadway : road->roadways())
         {
-            for (const auto& lane : roadway->lanes())
-            {
-                scene_->addPath(geometry->lane(lane.get()), QPen(Qt::gray, lane->width() * 0.5));
-            }
+            // for (const auto& lane : roadway->lanes())
+            // {
+            //     scene_->addPath(geometry->lane(lane.get()), QPen(Qt::gray, lane->width() * 0.5));
+            // }
             scene_->addPath(geometry->roadway(roadway), roadwayPen);
         }
     }

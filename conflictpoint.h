@@ -47,10 +47,10 @@ public:
         throw std::invalid_argument("Provided connection not part of this conflict point.");
     }
 
-    static ConflictType classify(const Connection* a, const Connection* b)
+    ConflictType classify() const
     {
-        const bool sameSrc = a->source() == b->source();
-        const bool sameDst = a->destination() == b->destination();
+        const bool sameSrc = connectionA_->source() == connectionB_->source();
+        const bool sameDst = connectionA_->destination() == connectionB_->destination();
         if (sameSrc && sameDst) throw std::runtime_error("Overlap conflict not supported.");
         if (sameDst) return ConflictType::Merging;
         if (sameSrc) return ConflictType::Diverging;

@@ -7,6 +7,7 @@ class Simulation
 {
     std::unique_ptr<RoadNetwork> network_;
     std::unique_ptr<Renderer> renderer_;
+    // std::unique_ptr<TrafficManager> traffic_;
 
 public:
     Simulation(QGraphicsScene* scene);

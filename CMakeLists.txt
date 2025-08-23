@@ -79,6 +79,8 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
         intersectioncontroltype.h
         conflictmanager.h conflictmanager.cpp
         iintersectioncontroller.h iintersectioncontroller.cpp
+        trafficmanager.h trafficmanager.cpp
+        itraversable.h itraversable.cpp
 
 
 

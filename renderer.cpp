@@ -48,10 +48,10 @@ void Renderer::draw() const
     {
         for (const auto& roadway : road->roadways())
         {
-            // for (const auto& lane : roadway->lanes())
-            // {
-            //     scene_->addPath(geometry->lane(lane.get()), QPen(Qt::gray, lane->width() * 0.5));
-            // }
+            for (const auto& lane : roadway->lanes())
+            {
+                scene_->addPath(geometry->lane(lane.get()), QPen(Qt::gray, lane->width() * 0.2));
+            }
             scene_->addPath(geometry->roadway(roadway), roadwayPen);
         }
     }

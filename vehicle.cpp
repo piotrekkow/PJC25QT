@@ -4,8 +4,7 @@
 
 Vehicle::Vehicle(GeometryManager* networkGeometry, Lane* initialLane, qreal initialPosition)
     : networkGeometry_{ networkGeometry },
-    state_{DrivingState::ON_LANE},
-    currentLane_{initialLane},
+    currentTraversable_{static_cast<ITraversable*>(initialLane)},
     progress_{initialPosition},
     currentSpeed_{0.0f},
     targetSpeed_{13.89f}, // ~50 km/h
@@ -28,41 +27,19 @@ void Vehicle::update(qreal deltaTime)
 
     progress_ += currentSpeed_ * deltaTime;
 
-    if (state_ == DrivingState::ON_LANE)
+    if (progress_ >= currentTraversable_->length(networkGeometry_))
     {
-        const QPainterPath& lanePath = networkGeometry_->lane(currentLane_);
-        const qreal laneLength = lanePath.length();
-
-        if (progress_ >= laneLength)
+        const auto& nextTraversables = currentTraversable_->next();
+        if (!nextTraversables.empty())
         {
-            const auto& connections = currentLane_->connections();
-            if (!connections.empty())
-            {
-                // Transition to the connection
-                currentConnection_ = connections[0]; // Take the first connection for simplicity
-                state_ = DrivingState::ON_CONNECTION;
-                progress_ -= laneLength; // Carry over the remaining progress
-            }
-            else
-            {
-                // No connection, stop at the end of the lane
-                progress_ = laneLength;
-                currentSpeed_ = 0;
-            }
+            progress_ -= currentTraversable_->length(networkGeometry_);
+            currentTraversable_ = nextTraversables[0];
         }
-    }
-    else // state_ == DrivingState::ON_CONNECTION
-    {
-        const QPainterPath& connectionPath = networkGeometry_->connection(currentConnection_);
-        const qreal connectionLength = connectionPath.length();
-
-        if (progress_ >= connectionLength)
+        else
         {
-            // Transition to the next lane
-            currentLane_ = currentConnection_->destination();
-            state_ = DrivingState::ON_LANE;
-            progress_ -= connectionLength; // Carry over remaining progress
-            currentConnection_ = nullptr;
+            progress_ = currentTraversable_->length(networkGeometry_);
+            currentSpeed_ = 0;
+            return;
         }
     }
 
@@ -71,16 +48,7 @@ void Vehicle::update(qreal deltaTime)
 
 void Vehicle::updatePositionAndAngle()
 {
-    const QPainterPath* currentPath = nullptr;
-    if (state_ == DrivingState::ON_LANE)
-    {
-        currentPath = &networkGeometry_->lane(currentLane_);
-    }
-    else // ON_CONNECTION
-    {
-        currentPath = &networkGeometry_->connection(currentConnection_);
-    }
-
+    const QPainterPath* currentPath = &currentTraversable_->path(networkGeometry_);
     if (!currentPath || currentPath->isEmpty()) return;
 
     qreal pathLength = currentPath->length();

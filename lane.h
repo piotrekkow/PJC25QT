@@ -1,12 +1,11 @@
 #pragma once
-#include <vector>
+#include "itraversable.h"
 #include <optional>
-#include <memory>
 #include "connection.h"
 
 class Roadway;
 
-class Lane
+class Lane : public ITraversable
 {
     /// Lane width in meters
     qreal width_;
@@ -21,4 +20,9 @@ public:
     void addOutgoingConnection(Connection* connection);
     const std::vector<Connection*>& connections() const { return connections_; }
     const Roadway* roadway() const { return roadway_; }
+
+    const QPainterPath& path(const GeometryManager* geometryManager) const override;
+    qreal length(const GeometryManager* geometryManager) const override;
+    TraversableType type() const override { return TraversableType::Lane; }
+    std::vector<ITraversable*> next() const override;
 };

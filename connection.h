@@ -1,9 +1,9 @@
 #pragma once
-#include <QLineF>
+#include "itraversable.h"
 
 class Lane;
 
-class Connection
+class Connection : public ITraversable
 {
     Lane* sourceLane_;
     Lane* destinationLane_;
@@ -19,4 +19,9 @@ public:
 
     void sourceOffset(qreal offset) { sourceOffset_ = offset; }
     void destinationOffset(qreal offset) { destinationOffset_ = offset; }
+
+    const QPainterPath& path(const GeometryManager* geometryManager) const override;
+    qreal length(const GeometryManager* geometryManager) const override;
+    TraversableType type() const override { return TraversableType::Connection; }
+    std::vector<ITraversable*> next() const override;
 };

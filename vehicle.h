@@ -6,11 +6,7 @@
 class Lane; // Forward declaration to avoid circular dependencies
 class Connection;
 class GeometryManager;
-
-enum class DrivingState {
-    ON_LANE,
-    ON_CONNECTION
-};
+class ITraversable;
 
 class Vehicle
 {
@@ -30,9 +26,7 @@ private:
     void updatePositionAndAngle();
 
     GeometryManager* networkGeometry_;
-    DrivingState state_;
-    Lane* currentLane_;
-    Connection* currentConnection_;
+    ITraversable* currentTraversable_;
     qreal progress_; // Distance from the start of the lane in meters
 
     qreal currentSpeed_; // in m/s

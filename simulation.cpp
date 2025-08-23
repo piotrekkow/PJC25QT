@@ -12,7 +12,7 @@ void Simulation::initialize()
 {
     auto is1 = network_->createIntersection({0, 0});
     auto is2 = network_->createIntersection({0, 200});
-    auto is3 = network_->createIntersection({200,-50});
+    auto is3 = network_->createIntersection({190,-50});
     auto is4 = network_->createIntersection({-100, -200});
     auto is5 = network_->createIntersection({-200, 50});
 
@@ -26,8 +26,13 @@ void Simulation::initialize()
     r4->createRoadway(is4);
     r5->createRoadways();
 
-    r3->geometry().pointAt(0).medianWidth(5.0f);
-    r3->geometry().addPoint({50, -10}, 1);
+    r3->geometry().addPoint({30, -6}, 1);
+    r3->geometry().pointAt(0).medianWidth(4.0f);
+    r3->geometry().addPoint({50, -12}, 2);
+    r3->geometry().pointAt(1).medianWidth(1.0f);
+    r3->geometry().addPoint({100, -30}, 3);
+    r3->geometry().addPoint({120, -42}, 4);
+    r3->geometry().addPoint({140, -46}, 5);
 
     r2->backwardRoadway()->addLane();
     auto conn2130 = is1->createConnection(r2->backwardRoadway()->lanes()[1].get(), r3->forwardRoadway()->lanes()[0].get());

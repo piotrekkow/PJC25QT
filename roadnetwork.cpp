@@ -17,7 +17,7 @@ Intersection *RoadNetwork::createIntersection(QPointF position)
 
 Road *RoadNetwork::createRoad(Intersection *startIntersection, Intersection *endIntersection)
 {
-    roads_.emplace_back(std::make_unique<Road>(startIntersection, endIntersection));
+    roads_.emplace_back(std::make_unique<Road>(startIntersection, endIntersection, geometryManager_.get()));
     Road* newRoad{ roads_.back().get() };
 
     startIntersection->addRoad(newRoad);

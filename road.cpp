@@ -1,11 +1,11 @@
 #include "road.h"
 #include <stdexcept>
 
-Road::Road(Intersection *primary, Intersection *secondary)
+Road::Road(Intersection *primary, Intersection *secondary, GeometryManager* geometryManager)
     : startIntersection_{ primary }
     , endIntersection_{ secondary }
 {
-    geometry_ = std::make_unique<RoadGeometry>(this);
+    geometry_ = std::make_unique<RoadGeometry>(this, geometryManager);
 }
 
 //

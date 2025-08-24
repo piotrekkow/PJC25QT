@@ -61,9 +61,6 @@ void Simulation::initialize()
 
 void Simulation::update(qreal deltaTime)
 {
-    for (const auto& vehicle : traffic_->vehicles())
-    {
-        vehicle->update(deltaTime);
-    }
+    traffic_->update(deltaTime);
     renderer_->draw();
 }

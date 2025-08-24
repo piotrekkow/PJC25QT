@@ -1,16 +1,19 @@
 #pragma once
 #include "roadgeometrypoint.h"
 #include <vector>
-#include <QPolygonF>
 
 class Road;
 class Lane;
+class GeometryManager;
 
 class RoadGeometry
 {
     std::vector<RoadGeometryPoint> points_;
+    const Road* road_;
+    GeometryManager* geometryManager_;
+
 public:
-    RoadGeometry(Road* road, qreal startOffset = 10.0f, qreal endOffset = 10.0f);
+    RoadGeometry(const Road* road, GeometryManager* geometryManager, qreal startOffset = 15.0f, qreal endOffset = 15.0f);
     void addPoint(QPointF position, size_t index);
 
     RoadGeometryPoint& pointAt(size_t index) { return points_.at(index); }

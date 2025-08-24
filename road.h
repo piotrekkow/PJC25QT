@@ -14,7 +14,7 @@ class Road
     std::unique_ptr<RoadGeometry> geometry_;
 
 public:
-    Road(Intersection* start, Intersection* end);
+    Road(Intersection* start, Intersection* end, GeometryManager* geometryManager);
     Roadway* createRoadway(Intersection* target);
     std::pair<Roadway*, Roadway*> createRoadways();
 

@@ -9,13 +9,20 @@ TrafficManager::TrafficManager(const RoadNetwork *network)
 
 void TrafficManager::update(qreal deltaTime)
 {
+    std::vector<Vehicle*> vehiclesToRemove;
     for (const auto& vehicle : vehicles_)
     {
         vehicle->update(deltaTime);
         if (vehicle->hasReachedDestination())
-            removeVehicle(vehicle.get());
+        {
+            vehiclesToRemove.push_back(vehicle.get());
+        }
     }
 
+    for (Vehicle* vehicle : vehiclesToRemove)
+    {
+        removeVehicle(vehicle);
+    }
 }
 
 Vehicle *TrafficManager::createVehicle(Lane *initialLane, qreal initialPosition)
@@ -31,5 +38,4 @@ void TrafficManager::removeVehicle(Vehicle *vehicle)
                                    {
                                        return v.get() == vehicle;
                                    }), vehicles_.end());
-    qDebug() << "vehicle removed";
 }

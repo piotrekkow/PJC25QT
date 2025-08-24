@@ -1,17 +1,22 @@
 #include "roadgeometry.h"
 #include "road.h"
-#include "geometryutils.h"
+#include "geometrymanager.h"
+#include <stdexcept>
 
 /**
  * Basic constructor for road geometry, assumes straight connection between intersections, end point intersection offset of 10m
 */
-RoadGeometry::RoadGeometry(Road* road, qreal startOffset, qreal endOffset)
+RoadGeometry::RoadGeometry(const Road* road, GeometryManager* geometryManager, qreal startOffset, qreal endOffset)
+    : road_{ road }
+    , geometryManager_{ geometryManager }
 {
     const QPointF startPos = road->startIntersection()->position();
     const QPointF endPos = road->endIntersection()->position();
 
-    const QPointF unitVector = tangent(startPos, endPos);
 
+    QLineF line(startPos, endPos);
+
+    const QPointF unitVector = line.unitVector().p2();
     const QPointF startPoint = startPos + (unitVector * startOffset);
     const QPointF endPoint = endPos - (unitVector * endOffset);
 
@@ -21,17 +26,20 @@ RoadGeometry::RoadGeometry(Road* road, qreal startOffset, qreal endOffset)
 
 void RoadGeometry::addPoint(QPointF position, size_t index)
 {
-    // The index must be valid for insertion. It can be any position *between*
-    // the start and end points, hence `index > 0` and `index < points_.size()`.
     if (index == 0 || index >= points_.size())
     {
         throw std::out_of_range("Cannot insert a point at the start or end of the road geometry, or out of bounds.");
     }
 
-    // Create an iterator pointing to the insertion position.
     auto it = points_.begin() + index;
-
-    // Insert the new RoadGeometryPoint at the specified location.
-    // The default median width and offset will be 0.0f.
     points_.insert(it, RoadGeometryPoint(position));
+
+    if (geometryManager_)
+    {
+        geometryManager_->invalidate(road_);
+    }
+    else
+    {
+        throw std::invalid_argument("Invalid pointer to geometry manager, cannot update geometry");
+    }
 }

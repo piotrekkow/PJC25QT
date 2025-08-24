@@ -19,4 +19,5 @@ public:
     const std::vector<std::unique_ptr<Intersection>>& intersections() const { return intersections_; }
     const std::vector<std::unique_ptr<Road>>& roads() const { return roads_; }
     const GeometryManager* geometry() const { return geometryManager_.get(); }
+    GeometryManager* geometry() { return geometryManager_.get(); }
 };

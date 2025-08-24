@@ -1,14 +1,13 @@
 #include "renderer.h"
 #include "roadnetwork.h"
-#include "intersection.h"
+#include "trafficmanager.h"
 #include <QGraphicsEllipseItem>
 #include <QGraphicsLineItem>
 
-#include "geometrymanager.h"
-
-Renderer::Renderer(QGraphicsScene *scene, const RoadNetwork *network)
+Renderer::Renderer(QGraphicsScene *scene, const RoadNetwork *network, const TrafficManager *traffic)
     : scene_{ scene }
     , network_{ network }
+    , traffic_{ traffic }
 {}
 
 void Renderer::draw() const
@@ -48,15 +47,15 @@ void Renderer::draw() const
     {
         for (const auto& roadway : road->roadways())
         {
-            for (const auto& lane : roadway->lanes())
-            {
-                scene_->addPath(geometry->lane(lane.get()), QPen(Qt::gray, lane->width() * 0.2));
-            }
+            // for (const auto& lane : roadway->lanes())
+            // {
+            //     scene_->addPath(geometry->lane(lane.get()), QPen(Qt::gray, lane->width() * 0.2));
+            // }
             scene_->addPath(geometry->roadway(roadway), roadwayPen);
         }
     }
 
-    for (const auto& vehicle : network_->vehicles())
+    for (const auto& vehicle : traffic_->vehicles())
     {
         QGraphicsRectItem* vehicleRect = new QGraphicsRectItem(
             -vehicle->length() / 2, -vehicle->width() / 2,

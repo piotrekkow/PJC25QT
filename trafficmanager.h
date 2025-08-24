@@ -1,19 +1,22 @@
 #pragma once
 #include <qtypes.h>
+#include "vehicle.h"
 
 class RoadNetwork;
-class Vehicle;
 class Lane;
 
 class TrafficManager
 {
-    RoadNetwork* network_;
+    std::vector<std::unique_ptr<Vehicle>> vehicles_;
+    const RoadNetwork* network_;
+
 
 public:
-    TrafficManager(RoadNetwork* network);
+    TrafficManager(const RoadNetwork* network);
 
     void update(qreal deltaTime);
 
-    Vehicle* createVehicle(Lane* initialLane);
+    Vehicle* createVehicle(Lane* initialLane, qreal initialPosition = 0.0);
+    const std::vector<std::unique_ptr<Vehicle>>& vehicles() const { return vehicles_; }
     void removeVehicle(Vehicle* vehicle);
 };

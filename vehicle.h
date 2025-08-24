@@ -11,7 +11,7 @@ class ITraversable;
 class Vehicle
 {
 public:
-    Vehicle(GeometryManager* networkGeometry, Lane* initialLane, qreal initialPosition = 0.0f);
+    Vehicle(const GeometryManager* networkGeometry, Lane* initialLane, qreal initialPosition = 0.0);
 
     void update(qreal deltaTime);
 
@@ -21,13 +21,17 @@ public:
     QColor color() const { return color_; }
     qreal length() const { return length_; }
     qreal width() const { return width_; }
+    qreal progress() const { return progress_; }
+    ITraversable* traversable() const { return currentTraversable_; }
+    bool hasReachedDestination() const { return hasReachedDestination_; }
 
 private:
     void updatePositionAndAngle();
 
-    GeometryManager* networkGeometry_;
+    const GeometryManager* networkGeometry_;
     ITraversable* currentTraversable_;
     qreal progress_; // Distance from the start of the lane in meters
+    bool hasReachedDestination_;
 
     qreal currentSpeed_; // in m/s
     qreal targetSpeed_;  // in m/s

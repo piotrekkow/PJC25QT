@@ -25,9 +25,3 @@ Road *RoadNetwork::createRoad(Intersection *startIntersection, Intersection *end
 
     return newRoad;
 }
-
-Vehicle* RoadNetwork::createVehicle(Lane* initialLane)
-{
-    vehicles_.emplace_back(std::make_unique<Vehicle>(geometryManager_.get(), initialLane));
-    return vehicles_.back().get();
-}

@@ -2,9 +2,10 @@
 #include <QDebug>
 
 Simulation::Simulation(QGraphicsScene *scene)
+    : network_{ std::make_unique<RoadNetwork>() }
+    , traffic_{ std::make_unique<TrafficManager>(network_.get()) }
+    , renderer_{ std::make_unique<Renderer>(scene, network_.get(), traffic_.get()) }
 {
-    network_ = std::make_unique<RoadNetwork>();
-    renderer_ = std::make_unique<Renderer>(scene, network_.get());
     initialize();
 }
 
@@ -13,7 +14,7 @@ void Simulation::initialize()
     auto is1 = network_->createIntersection({0, 0});
     auto is2 = network_->createIntersection({0, 200});
     auto is3 = network_->createIntersection({190,-50});
-    auto is4 = network_->createIntersection({-100, -200});
+    auto is4 = network_->createIntersection({-50, -100});
     auto is5 = network_->createIntersection({-200, 50});
 
     auto r2 = network_->createRoad(is1, is2);
@@ -51,8 +52,8 @@ void Simulation::initialize()
 
     is1->createConnection(r2->backwardRoadway()->lanes()[0].get(), r5->forwardRoadway()->lanes()[0].get());
 
-    network_->createVehicle(r2->backwardRoadway()->lanes()[0].get());
-    network_->createVehicle(r3->backwardRoadway()->lanes()[0].get());
+    traffic_->createVehicle(r2->backwardRoadway()->lanes()[0].get());
+    traffic_->createVehicle(r3->backwardRoadway()->lanes()[0].get());
 
     is1->conflictManager()->recalculate();
     renderer_->draw();
@@ -60,7 +61,7 @@ void Simulation::initialize()
 
 void Simulation::update(qreal deltaTime)
 {
-    for (const auto& vehicle : network_->vehicles())
+    for (const auto& vehicle : traffic_->vehicles())
     {
         vehicle->update(deltaTime);
     }

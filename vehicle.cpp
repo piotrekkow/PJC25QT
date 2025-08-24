@@ -2,12 +2,13 @@
 #include "lane.h"
 #include "geometrymanager.h"
 
-Vehicle::Vehicle(GeometryManager* networkGeometry, Lane* initialLane, qreal initialPosition)
+Vehicle::Vehicle(const GeometryManager* networkGeometry, Lane* initialLane, qreal initialPosition)
     : networkGeometry_{ networkGeometry },
     currentTraversable_{static_cast<ITraversable*>(initialLane)},
     progress_{initialPosition},
-    currentSpeed_{0.0f},
-    targetSpeed_{13.89f}, // ~50 km/h
+    hasReachedDestination_{false},
+    currentSpeed_{0.0f}, // ~50 km/h
+    targetSpeed_{13.89f},
     angle_{0.0f},
     color_{Qt::blue},
     length_{4.5f},
@@ -37,8 +38,7 @@ void Vehicle::update(qreal deltaTime)
         }
         else
         {
-            progress_ = currentTraversable_->length(networkGeometry_);
-            currentSpeed_ = 0;
+            hasReachedDestination_ = true;
             return;
         }
     }
@@ -52,7 +52,7 @@ void Vehicle::updatePositionAndAngle()
     if (!currentPath || currentPath->isEmpty()) return;
 
     qreal pathLength = currentPath->length();
-    qreal clampedProgress = std::max(0.0, std::min((double)progress_, pathLength));
+    qreal clampedProgress = std::max(0.0, std::min((qreal)progress_, pathLength));
     qreal percent = currentPath->percentAtLength(clampedProgress);
 
     position_ = currentPath->pointAtPercent(percent);

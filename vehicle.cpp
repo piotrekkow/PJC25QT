@@ -99,20 +99,17 @@ qreal Vehicle::distanceToStopLine()
     if (currentTraversable_->type() == ITraversable::TraversableType::Connection)
     {
         auto* conn = static_cast<const Connection*>(currentTraversable_);
-
-        if (conn->stopLineOffset() - progress_ < 0)
-        {
-            qreal nextLaneLength = conn->next()[0]->length(networkGeometry_);
-            qreal remainderOnThisConnection = conn->length(networkGeometry_) - progress_;
-            qreal nextConnectionStopOffset = static_cast<const Connection*>(conn->next()[0]->next()[0])->stopLineOffset();
-            return nextLaneLength + remainderOnThisConnection + nextConnectionStopOffset;
-        }
         return conn->stopLineOffset() - progress_;
     }
     else
     {
+        const auto& nextTraversables = currentTraversable_->next();
+        if (nextTraversables.empty())
+        {
+            return std::numeric_limits<qreal>::max(); // No next stop line
+        }
         qreal remainingLaneLength = currentTraversable_->length(networkGeometry_) - progress_;
-        qreal nextConnectionStopOffset = static_cast<const Connection*>(currentTraversable_->next()[0])->stopLineOffset();
+        qreal nextConnectionStopOffset = static_cast<const Connection*>(nextTraversables[0])->stopLineOffset();
         return remainingLaneLength + nextConnectionStopOffset;
     }
 }
@@ -120,7 +117,7 @@ qreal Vehicle::distanceToStopLine()
 void Vehicle::applyPhysics(qreal deltaTime)
 {
     currentSpeed_ += currentAcceleration_ * deltaTime;
-    currentSpeed_ = std::max(0.0, currentSpeed_);
+    currentSpeed_ = std::clamp(currentSpeed_, 0.0, targetSpeed_);
     progress_ += currentSpeed_ * deltaTime;
 }
 
@@ -136,7 +133,12 @@ void Vehicle::updateDecision()
         if (currentTraversable_->type() == ITraversable::TraversableType::Lane)
         {
             auto* lane = static_cast<const Lane*>(currentTraversable_);
-            distanceToConflict = lane->length(networkGeometry_) - progress_ + conflict.point->distanceFrom(static_cast<const Connection*>(lane->next()[0]));
+            const auto& nextTraversables = lane->next();
+            if (nextTraversables.empty())
+            {
+                continue; // Skip this conflict if no path forward
+            }
+            distanceToConflict = lane->length(networkGeometry_) - progress_ + conflict.point->distanceFrom(static_cast<const Connection*>(nextTraversables[0]));
         }
         else
         {

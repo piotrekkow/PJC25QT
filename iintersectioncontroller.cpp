@@ -19,6 +19,7 @@ const IntersectionDecisionData UncontrolledIntersection::decisionData(const Vehi
     if (vehiclesTraversable->type() == ITraversable::TraversableType::Lane)
     {
         Lane* lane = static_cast<Lane*>(vehiclesTraversable);
+        if (lane->next().empty()) return { false, {} };
         Connection* nextConnection = static_cast<Connection*>(lane->next()[0]); // for now we take the first available connection, when pathfinding is added this will change
 
         qreal distanceToStopLine = lane->length(geometry_) + nextConnection->stopLineOffset() - vehicle->progress();

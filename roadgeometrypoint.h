@@ -16,5 +16,4 @@ public:
     void position(QPointF& position) { position_ = position; }
     void medianWidth(qreal width) { medianWidth_ = width; }
     void medianOffset(qreal offset) { medianOffset_ = offset; }
-
 };

@@ -27,7 +27,7 @@ void TrafficManager::update(qreal deltaTime)
 
 Vehicle *TrafficManager::createVehicle(Lane *initialLane, qreal initialPosition)
 {
-    vehicles_.emplace_back(std::make_unique<Vehicle>(network_->geometry(), initialLane, initialPosition));
+    vehicles_.emplace_back(std::make_unique<Vehicle>(network_->geometry(), initialLane, this, initialPosition));
     return vehicles_.back().get();
 }
 

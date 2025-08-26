@@ -20,12 +20,12 @@ Roadway *Road::createRoadway(Intersection *target)
 {
     if (target == endIntersection_)
     {
-        forwardRoadway_ = std::make_unique<Roadway>(this, startIntersection_, endIntersection_, RoadwayDirection::FORWARD);
+        forwardRoadway_ = std::make_unique<Roadway>(this, startIntersection_, endIntersection_, Roadway::RoadwayDirection::FORWARD, PriorityType::Yield);
         return forwardRoadway_.get();
     }
     else if (target == startIntersection_)
     {
-        backwardRoadway_ = std::make_unique<Roadway>(this, endIntersection_, startIntersection_, RoadwayDirection::BACKWARD);
+        backwardRoadway_ = std::make_unique<Roadway>(this, endIntersection_, startIntersection_, Roadway::RoadwayDirection::BACKWARD, PriorityType::Yield);
         return backwardRoadway_.get();
     }
     else
@@ -39,8 +39,8 @@ Roadway *Road::createRoadway(Intersection *target)
  */
 std::pair<Roadway *, Roadway *> Road::createRoadways()
 {
-    forwardRoadway_ = std::make_unique<Roadway>(this, startIntersection_, endIntersection_, RoadwayDirection::FORWARD);
-    backwardRoadway_ = std::make_unique<Roadway>(this, endIntersection_, startIntersection_, RoadwayDirection::BACKWARD);
+    forwardRoadway_ = std::make_unique<Roadway>(this, startIntersection_, endIntersection_, Roadway::RoadwayDirection::FORWARD, PriorityType::Yield);
+    backwardRoadway_ = std::make_unique<Roadway>(this, endIntersection_, startIntersection_, Roadway::RoadwayDirection::BACKWARD, PriorityType::Yield);
     return std::pair(forwardRoadway_.get(), backwardRoadway_.get());
 }
 

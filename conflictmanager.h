@@ -15,5 +15,5 @@ public:
     ConflictManager(const Intersection* intersection, const GeometryManager* geometry);
     void recalculate();
     const std::vector<std::unique_ptr<ConflictPoint>>& conflicts() const { return conflictPoints_; }
-    const std::vector<const ConflictPoint*>& conflicts(Connection *connection) const;
+    const std::vector<const ConflictPoint*>& conflicts(const Connection *connection) const;
 };

@@ -15,9 +15,19 @@ void Lane::addOutgoingConnection(Connection *connection)
     connections_.emplace_back(connection);
 }
 
+PriorityType Lane::roadwayPriority() const
+{
+    return roadway_->priority();
+}
+
 const QPainterPath &Lane::path(const GeometryManager *geometryManager) const
 {
     return geometryManager->lane(this);
+}
+
+const Intersection *Lane::intersection() const
+{
+    return roadway_->destination();
 }
 
 qreal Lane::length(const GeometryManager *geometryManager) const

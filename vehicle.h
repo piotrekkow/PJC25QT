@@ -7,12 +7,21 @@ class Lane; // Forward declaration to avoid circular dependencies
 class Connection;
 class GeometryManager;
 class ITraversable;
+class TrafficManager;
 
 class Vehicle
 {
 public:
-    Vehicle(const GeometryManager* networkGeometry, Lane* initialLane, qreal initialPosition = 0.0);
+    enum class VehicleState
+    {
+        Proceeding,      // Normal driving, following speed limits and other cars.
+        Yielding,     // Decelerating to stop before a conflict point or stop line.
+        Stopping,     // Performing a final, hard stop to 0 speed.
+        Waiting,      // Stopped at a line, waiting for clearance.
+        Queued        // Stopped behind another vehicle.
+    };
 
+    Vehicle(const GeometryManager* networkGeometry, Lane* initialLane, TrafficManager* trafficManager, qreal initialPosition = 0.0);
     void update(qreal deltaTime);
 
     // --- Getters ---
@@ -22,25 +31,40 @@ public:
     qreal length() const { return length_; }
     qreal width() const { return width_; }
     qreal progress() const { return progress_; }
+    qreal speed() const { return currentSpeed_; }
+    qreal acceleration() const { return currentAcceleration_; }
+    qreal decisionDistance() const { return std::max(currentSpeed_ * currentSpeed_ / comfortableDeceleration_, 40.0); } // m, how far from a decision point to start thinking about it.
     ITraversable* traversable() const { return currentTraversable_; }
     bool hasReachedDestination() const { return hasReachedDestination_; }
 
 private:
     void updatePositionAndAngle();
+    void stopping(qreal distanceToStopPoint);
+    qreal distanceToStopLine();
 
     const GeometryManager* networkGeometry_;
     ITraversable* currentTraversable_;
-    qreal progress_; // Distance from the start of the lane in meters
+    qreal progress_;
     bool hasReachedDestination_;
 
     qreal currentSpeed_; // in m/s
     qreal targetSpeed_;  // in m/s
+    qreal currentAcceleration_; // in m/s^2
 
-    QPointF position_;
     qreal angle_;      // in degrees
+    QPointF position_;
 
-    // --- Vehicle Properties ---
     QColor color_;
     qreal length_;
     qreal width_;
+
+    qreal maxAcceleration_;          // m/s^2, e.g., 3.0
+    qreal comfortableDeceleration_;  // m/s^2, e.g., 2.5 (used for normal yielding)
+    qreal maxDeceleration_;          // m/s^2, e.g., 8.0 (used for emergency stops)
+
+    VehicleState state_;
+    const TrafficManager* trafficManager_;
+
+    void applyPhysics(qreal deltaTime);
+    void updateDecision();
 };

@@ -1,10 +1,11 @@
 #include "intersection.h"
-#include "roadway.h"
+#include "road.h"
 
 Intersection::Intersection(QPointF position, GeometryManager* geometry)
     : position_{ position }
 {
     conflictManager_ = std::make_unique<ConflictManager>(this, geometry);
+    controller_ = std::make_unique<UncontrolledIntersection>(this, geometry);
 }
 
 void Intersection::addRoad(Road *road)
@@ -37,4 +38,18 @@ Connection* Intersection::createConnection(Lane *source, Lane *destination)
     connections_.emplace_back(std::move(newConnection));
 
     return connectionPtr;
+}
+
+bool Intersection::reachedPriorityRoadwayLimit()
+{
+    int priorityRoadways{ 0 };
+    for (const auto& road : roads_)
+    {
+        Roadway* approach = road->forwardRoadway()->destination() == this ? road->forwardRoadway() : road->backwardRoadway();
+        if (approach->priority() == PriorityType::Priority)
+            priorityRoadways++;
+        if (priorityRoadways > 2)
+            return false;
+    }
+    return true;
 }

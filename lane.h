@@ -21,7 +21,10 @@ public:
     const std::vector<Connection*>& connections() const { return connections_; }
     const Roadway* roadway() const { return roadway_; }
 
+    PriorityType roadwayPriority() const override;
     const QPainterPath& path(const GeometryManager* geometryManager) const override;
+    const Intersection* intersection() const override;
+
     qreal length(const GeometryManager* geometryManager) const override;
     TraversableType type() const override { return TraversableType::Lane; }
     std::vector<ITraversable*> next() const override;

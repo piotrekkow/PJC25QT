@@ -11,7 +11,7 @@ VehiclePID::VehiclePID(qreal kp, qreal ki, qreal kd)
 {}
 
 VehiclePID::VehiclePID()
-    : VehiclePID(2.0, 0.1, 0.5)
+    : VehiclePID(2.0, 0.1, 0.4)
 {}
 
 void VehiclePID::gains(qreal kp, qreal ki, qreal kd)
@@ -81,19 +81,15 @@ qreal VehiclePID::calculateTargetSpeed(const Input &input)
 
 qreal VehiclePID::applyHumanLikeConstraints(qreal requestedAccel, const Input &input)
 {
-    // Determine situation-based limits
-    qreal situationFactor = calculateSituationFactor(input);
 
-    // Comfortable limits based on situation
-    qreal maxComfortAccel = input.maxAcceleration * (0.6 + 0.4 * situationFactor);
-    qreal maxComfortDecel = input.comfortableDeceleration * (0.8 + 0.2 * situationFactor);
+    qreal maxComfortAccel = input.maxAcceleration;
+    qreal maxComfortDecel = input.comfortableDeceleration;
 
     // Check for emergency conditions
     if (input.action == DrivingBehavior::EmergencyBrake) {
         return input.maxDeceleration;
     }
 
-    // Apply smooth rate limiting (humans don't make instant changes)
     requestedAccel = applyRateLimiting(requestedAccel, input.deltaTime);
 
     // Final constraint to comfort/safety limits
@@ -123,9 +119,16 @@ qreal VehiclePID::calculateSituationFactor(const Input &input)
 
 qreal VehiclePID::applyRateLimiting(qreal requestedAccel, qreal deltaTime)
 {
-    // Human reaction/comfort limit - can't change acceleration instantly
-    qreal maxAccelChangeRate = 4.0; // m/s² per second
-    qreal maxChange = maxAccelChangeRate * deltaTime;
+    const qreal accelerationJerk = 16.0; // m/s^3 - A higher value for a more responsive feel when accelerating.
+    const qreal brakingJerk = 4.0;      // m/s^3 - A lower value for smoother, more comfortable braking.
+
+    qreal maxChange;
+
+    if (requestedAccel > previousAccel_) {
+        maxChange = accelerationJerk * deltaTime;
+    } else {
+        maxChange = brakingJerk * deltaTime;
+    }
 
     qreal limitedAccel = std::clamp(requestedAccel,
                                     previousAccel_ - maxChange,
@@ -147,7 +150,7 @@ qreal VehiclePID::calculateStopTargetSpeed(const Input &input)
     // Based on the kinematic equation: v_target = sqrt(2 * deceleration * distance)
     // We use max(0.0, ...) to prevent a domain error in sqrt if the distance is negative.
     qreal distance = std::max(0.0, input.distanceToStopPoint);
-    qreal targetSpeed = std::sqrt(2.0 * input.comfortableDeceleration * distance);
+    qreal targetSpeed = std::sqrt(2.0 * -input.comfortableDeceleration * distance);
 
     // The target speed should not exceed the driver's desired cruise speed.
     // The vehicle shouldn't speed up just to match a distant braking profile.
@@ -169,5 +172,6 @@ qreal VehiclePID::calculateAdaptiveTargetSpeed(const Input &input)
 void VehiclePID::reset() {
     integral_ = 0.0;
     previousError_ = 0.0;
+    previousAccel_ = 0.0;
     firstRun_ = true;
 }

@@ -12,7 +12,7 @@ Simulation::Simulation(QGraphicsScene *scene)
 void Simulation::initialize()
 {
     auto is1 = network_->createIntersection({0, 0});
-    auto is2 = network_->createIntersection({0, 200});
+    auto is2 = network_->createIntersection({0, 180});
     auto is3 = network_->createIntersection({190,-50});
     auto is4 = network_->createIntersection({-50, -100});
     auto is5 = network_->createIntersection({-200, 50});

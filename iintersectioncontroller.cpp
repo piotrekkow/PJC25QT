@@ -69,6 +69,7 @@ const IntersectionDecisionData UncontrolledIntersection::conflictsMustYieldTo(co
                                 ? cp->distanceFrom(priorityConn) - vehicle->progress()
                                 : priorityConn->source()->length(geometry_) - vehicle->progress() + cp->distanceFrom(priorityConn);
 
+            if (distance < 0) continue;
             foundVehicles.emplace_back(PriorityVehicleInfo{vehicle.get(), distance});
         }
 

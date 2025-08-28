@@ -35,6 +35,7 @@ void Vehicle::update(qreal deltaTime)
 
     qreal acceleration = pidController_.calculateAcceleration(pidInput(deltaTime));
     currentAcceleration_ = acceleration;
+    qDebug() << "vehicle " << this << currentAcceleration_;
 
     applyPhysics(deltaTime);
     updatePositionAndAngle();
@@ -192,16 +193,22 @@ qreal Vehicle::calculateDistanceToConflict(const ConflictData &conflict) const
 
 void Vehicle::setNextDrivingBehavior(bool canProceed)
 {
+    DrivingBehavior newBehavior;
     if (canProceed)
     {
-        behavior_ = DrivingBehavior::AdaptiveCruise;
+        newBehavior = DrivingBehavior::AdaptiveCruise;
         nextStopDistance_ = std::numeric_limits<qreal>::max();
     }
     else
     {
-        behavior_ = DrivingBehavior::StopAtPoint;
+        newBehavior = DrivingBehavior::StopAtPoint;
         nextStopDistance_ = distanceToStopLine();
     }
+    if (newBehavior != behavior_)
+        pidController_.reset();
+
+    behavior_ = newBehavior;
+
 }
 
 VehiclePID::Input Vehicle::pidInput(qreal deltaTime)

@@ -12,7 +12,7 @@ Vehicle::Vehicle(const GeometryManager* networkGeometry, Lane* initialLane, Traf
     , progress_{ initialPosition }
     , hasReachedDestination_{ false }
     , currentSpeed_{ 13.89 } // ~50 km/h
-    , targetSpeed_{ 13.89 }
+    , cruiseSpeed_{ 13.89 }
     , currentAcceleration_{ 0.0 }
     , angle_{ 0.0 }
     , color_{ Qt::blue }
@@ -21,34 +21,22 @@ Vehicle::Vehicle(const GeometryManager* networkGeometry, Lane* initialLane, Traf
     , maxAcceleration_{ 2.5 }
     , comfortableDeceleration_{ -2.0 }
     , maxDeceleration_{ -5.0 }
-    , state_{ VehicleState::Proceeding }
+    , decision_{ Decision::Proceeding }
+    , behavior_{ DrivingBehavior::AdaptiveCruise }
     , trafficManager_{ trafficManager }
-    , pidController_{ VehiclePID(this) }
+    , pidController_{ VehiclePID() }
 {
     updatePositionAndAngle();
 }
 
 void Vehicle::update(qreal deltaTime)
 {
-    if (distanceToStopLine() <= decisionDistance() && state_ != VehicleState::Stopping)
-        updateDecision();
+    updateDecision();
 
-    qreal distanceToTarget = 9999;
-    if (state_ == VehicleState::Proceeding)
-    {
-        pidController_.mode(VehiclePID::Cruising);
-    }
+    qreal acceleration = pidController_.calculateAcceleration(pidInput(deltaTime));
+    currentAcceleration_ = acceleration;
 
-    else if (state_ == VehicleState::Yielding || state_ == VehicleState::Stopping || state_ == VehicleState::Waiting)
-    {
-        pidController_.mode(VehiclePID::Stopping);
-        distanceToTarget = distanceToStopLine();
-        qDebug() << "Yielding " << this;
-    }
-
-    pidController_.update(distanceToTarget, deltaTime, targetSpeed_);
     applyPhysics(deltaTime);
-
     updatePositionAndAngle();
 }
 
@@ -104,24 +92,17 @@ qreal Vehicle::distanceToStopLine()
 void Vehicle::applyPhysics(qreal deltaTime)
 {
     currentSpeed_ += currentAcceleration_ * deltaTime;
-    currentSpeed_ = std::clamp(currentSpeed_, 0.0, targetSpeed_);
+    currentSpeed_ = std::clamp(currentSpeed_, 0.0, cruiseSpeed_);
     progress_ += currentSpeed_ * deltaTime;
 }
 
-const qreal MAX_SPEED{ 13.88 };             // m/s
-const qreal PERCIEVED_SAFETY_MARGIN{ 1.5 }; // s
 void Vehicle::updateDecision()
 {
-    const IntersectionDecisionData decisionData = currentTraversable_->intersection()->controller()->decisionData(this, trafficManager_->vehicles());
-
-    if (decisionData.mustPerformFullStop)
-    {
-        state_ = VehicleState::Stopping;
-        return;
-    }
+    auto* intersectionController = currentTraversable_->intersection()->controller();
+    const IntersectionDecisionData decisionData = intersectionController->decisionData(this, trafficManager_->vehicles());
 
     bool canProceed = canSafelyProceed(decisionData);
-    setNextState(canProceed);
+    setNextDrivingBehavior(canProceed);
 }
 
 bool Vehicle::canSafelyProceed(const IntersectionDecisionData &decisionData) const
@@ -129,13 +110,9 @@ bool Vehicle::canSafelyProceed(const IntersectionDecisionData &decisionData) con
     for (const auto& conflict : decisionData.conflictsToEvaluate)
     {
         qreal distanceToConflict = calculateDistanceToConflict(conflict);
-        // If the path is invalid or blocked, skip this conflict evaluation.
-        if (distanceToConflict < 0)
-        {
-            continue;
-        }
+        if (distanceToConflict < 0) continue;
 
-        qreal thisApproachTime = calculateTimeToReach(distanceToConflict, currentSpeed_, maxAcceleration_, MAX_SPEED);
+        qreal thisApproachTime = calculateTimeToReach(distanceToConflict, currentSpeed_, maxAcceleration_, cruiseSpeed_);
 
         for (const auto& other : conflict.priorityVehicles)
         {
@@ -149,23 +126,21 @@ bool Vehicle::canSafelyProceed(const IntersectionDecisionData &decisionData) con
 
     return true; // No conflicts found, it's safe to proceed.
 }
-
 bool Vehicle::isSufficientlyAheadOf(qreal thisApproachTime, const PriorityVehicleInfo &other) const
 {
-    // A simple estimate assuming the other vehicle maintains its current speed.
-    qreal otherApproachTime = other.distanceToConflictPoint / other.vehicle->speed();
+    // If the conflict point is behind the other vehicle, we are safely ahead.
+    if (other.distanceToConflictPoint < 0) return true;
 
-    // A more precise estimate that accounts for the other vehicle's potential acceleration.
-    qreal otherAccelAdjustedApproachTime = calculateTimeToReach(
-        other.distanceToConflictPoint,
-        other.vehicle->speed(),
-        other.vehicle->acceleration(),
-        MAX_SPEED
-        );
+    const qreal otherTimeToConflict = (other.vehicle->acceleration() > 0.2)
+                                          ? calculateTimeToReach(
+                                                other.distanceToConflictPoint,
+                                                other.vehicle->speed(),
+                                                other.vehicle->acceleration(),
+                                                13.88) // TODO: Replace with a dynamic value, e.g., speed limit.
+                                          : other.distanceToConflictPoint / other.vehicle->speed();
 
-    // We must be faster than both estimates plus the safety margin.
-    return (thisApproachTime + PERCIEVED_SAFETY_MARGIN < otherApproachTime) &&
-           (thisApproachTime + PERCIEVED_SAFETY_MARGIN < otherAccelAdjustedApproachTime);
+    // Check if our vehicle will clear the conflict point with a sufficient safety margin.
+    return thisApproachTime + safetyTimeGap_ < otherTimeToConflict;
 }
 
 qreal Vehicle::calculateTimeToReach(qreal distance, qreal initialSpeed, qreal acceleration, qreal maxSpeed) const
@@ -215,18 +190,37 @@ qreal Vehicle::calculateDistanceToConflict(const ConflictData &conflict) const
     }
 }
 
-void Vehicle::setNextState(bool canProceed)
+void Vehicle::setNextDrivingBehavior(bool canProceed)
 {
     if (canProceed)
     {
-        state_ = VehicleState::Proceeding;
-    }
-    else if (currentSpeed_ > 0)
-    {
-        state_ = VehicleState::Yielding;
+        behavior_ = DrivingBehavior::AdaptiveCruise;
+        nextStopDistance_ = std::numeric_limits<qreal>::max();
     }
     else
     {
-        state_ = VehicleState::Queued;
+        behavior_ = DrivingBehavior::StopAtPoint;
+        nextStopDistance_ = distanceToStopLine();
     }
+}
+
+VehiclePID::Input Vehicle::pidInput(qreal deltaTime)
+{
+    return {
+        .action = behavior_,
+        .currentSpeed = currentSpeed_,
+        .deltaTime = deltaTime,
+        .desiredCruiseSpeed = cruiseSpeed_,
+        .distanceToStopPoint = nextStopDistance_,
+        .maxAcceleration = maxAcceleration_,
+        .comfortableDeceleration = comfortableDeceleration_,
+        .maxDeceleration = maxDeceleration_,
+        .safetyTimeGap = safetyTimeGap_,
+        .safetyMinDistance = safetyMinDistance_
+    };
+}
+
+qreal Vehicle::decisionDistance() const
+{
+    return (currentSpeed_ * currentSpeed_) / (2 * std::abs(comfortableDeceleration_));
 }

@@ -37,7 +37,18 @@ void Renderer::draw() const
             if (cp->classify() == ConflictPoint::ConflictType::Crossing) cpPen.setColor(Qt::red);
             else if (cp->classify() == ConflictPoint::ConflictType::Merging) cpPen.setColor(Qt::magenta);
             else cpPen.setColor(Qt::gray);
-            drawCircle(cp->position(), cpSize, cpPen);
+
+            const QPointF& pos = cp->position();
+            drawCircle(pos, cpSize, cpPen);
+            QString coordText = QString::asprintf("%.3f, %.3f", pos.x(), pos.y());
+            QFont font;
+            font.setPointSize(1);
+
+            QGraphicsTextItem* textItem = scene_->addText(coordText);
+            textItem->setFont(font);
+
+            textItem->setPos(pos - QPointF{4.0, 4.0}); // Position the text at the same point
+            textItem->setDefaultTextColor(Qt::red); // Set a visible color
         }
 
     }

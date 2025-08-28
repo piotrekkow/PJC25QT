@@ -45,11 +45,18 @@ bool Intersection::reachedPriorityRoadwayLimit()
     int priorityRoadways{ 0 };
     for (const auto& road : roads_)
     {
-        Roadway* approach = road->forwardRoadway()->destination() == this ? road->forwardRoadway() : road->backwardRoadway();
-        if (approach->priority() == PriorityType::Priority)
+        Roadway* approachingRoadway = nullptr;
+        if (road->forwardRoadway() && road->forwardRoadway()->destination() == this) {
+            approachingRoadway = road->forwardRoadway();
+        } else if (road->backwardRoadway() && road->backwardRoadway()->destination() == this) {
+            approachingRoadway = road->backwardRoadway();
+        }
+
+        if (approachingRoadway && approachingRoadway->priority() == PriorityType::Priority)
+        {
             priorityRoadways++;
-        if (priorityRoadways > 2)
-            return false;
+        }
     }
-    return true;
+    // Return true if the limit of 2 priority roadways has been met or exceeded.
+    return priorityRoadways >= 2;
 }

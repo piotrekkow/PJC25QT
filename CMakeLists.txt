@@ -84,6 +84,7 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
         PriorityType.h
         IntersectionDecisionData.h
         DebugHelpers.h
+        vehiclepid.h vehiclepid.cpp
 
 
 

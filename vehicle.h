@@ -1,5 +1,7 @@
 #pragma once
 
+#include "IntersectionDecisionData.h"
+#include "vehiclepid.h"
 #include <QPointF>
 #include <QColor>
 
@@ -8,6 +10,8 @@ class Connection;
 class GeometryManager;
 class ITraversable;
 class TrafficManager;
+class VehiclePID;
+struct ConflictData;
 
 class Vehicle
 {
@@ -39,7 +43,7 @@ public:
 
 private:
     void updatePositionAndAngle();
-    void stopping(qreal distanceToStopPoint);
+    void stopping(qreal distanceToStopPoint, qreal deltaTime);
     qreal distanceToStopLine();
 
     const GeometryManager* networkGeometry_;
@@ -67,4 +71,21 @@ private:
 
     void applyPhysics(qreal deltaTime);
     void updateDecision();
+
+    bool canSafelyProceed(const IntersectionDecisionData& decisionData) const;
+    bool isSufficientlyAheadOf(qreal thisApproachTime, const PriorityVehicleInfo& other) const;
+    qreal calculateTimeToReach(qreal distance, qreal initialSpeed, qreal acceleration, qreal maxSpeed) const;
+    qreal calculateDistanceToConflict(const ConflictData& conflict) const;
+    void setNextState(bool canProceed);
+
+    // --- PID Controller Gains (these will need tuning) ---
+    qreal Kp_ = 1.0; // Proportional gain - main braking force
+    qreal Ki_ = 0.0; // Integral gain - corrects steady-state error
+    qreal Kd_ = 0.0;  // Derivative gain - dampens and smooths
+
+    // --- PID State Variables ---
+    qreal integralError_ = 0.0;
+    qreal previousError_ = 0.0;
+
+    VehiclePID pidController_;
 };

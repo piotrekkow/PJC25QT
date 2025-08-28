@@ -34,6 +34,6 @@ public:
     // IntersectionDecisionData conflictsMustYieldTo(const Connection* conn, const std::vector<std::unique_ptr<Vehicle>>& allVehicles) override;
 
 private:
-    //bool mustYieldTo(const Connection* self, const Connection* other);
+    bool mustYieldTo(const Connection* ourConn, const ConflictPoint* cp) const;
     IntersectionDecisionData const conflictsMustYieldTo(const Connection* conn, const std::vector<std::unique_ptr<Vehicle>>& allVehicles) const;
 };

@@ -7,120 +7,73 @@
 
 const IntersectionDecisionData UncontrolledIntersection::decisionData(const Vehicle *vehicle, const std::vector<std::unique_ptr<Vehicle> > &allVehicles) const
 {
-    auto* vehiclesTraversable = vehicle->traversable();  
-    if (vehiclesTraversable->type() == ITraversable::TraversableType::Connection)
+    auto* traversable = vehicle->traversable();
+    if (traversable->intersection() != intersection_) throw std::invalid_argument("Vehicle making decision at an invalid intersection");
+
+    if (traversable->type() == ITraversable::TraversableType::Connection)
     {
-        auto* connection = static_cast<Connection*>(vehiclesTraversable);
+        auto* connection = static_cast<Connection*>(traversable);
         qreal distanceToStopLine = connection->stopLineOffset() - vehicle->progress();
         if (distanceToStopLine >= 0)
             return conflictsMustYieldTo(connection, allVehicles);
     }
 
-    if (vehiclesTraversable->type() == ITraversable::TraversableType::Lane)
+    if (traversable->type() == ITraversable::TraversableType::Lane)
     {
-        Lane* lane = static_cast<Lane*>(vehiclesTraversable);
+        Lane* lane = static_cast<Lane*>(traversable);
         if (lane->next().empty()) return { false, {} };
         Connection* nextConnection = static_cast<Connection*>(lane->next()[0]); // for now we take the first available connection, when pathfinding is added this will change
 
         qreal distanceToStopLine = lane->length(geometry_) + nextConnection->stopLineOffset() - vehicle->progress();
         if (distanceToStopLine <= vehicle->decisionDistance())
+        {
             return conflictsMustYieldTo(nextConnection, allVehicles);
+        }
     }
 
     return { false, {} };    // can proceed, past stop line
 }
 
-// bool UncontrolledIntersection::mustYieldTo(const Connection *self, const Connection *other)
-// {
-//     // Diverging conflict point case
-//     if (self->source() == other->source()) return false;
-
-//     // Lower priority level gives way to higher priority level
-//     if (self->roadwayPriority() > other->roadwayPriority()) return true;
-//     if (self->roadwayPriority() < other->roadwayPriority()) return false;
-
-//     // Same priority level - check for priority to the right rule baked into connections
-//     const auto& conflictPoints = intersection_->conflictManager()->conflicts(self);
-//     auto result = std::ranges::find_if(conflictPoints,
-//                                        [&](const ConflictPoint* cp) {
-//                                            // The predicate: find the conflict point that involves 'other'.
-//                                            // We already know 'self' is involved because of the initial query.
-//                                            return cp->priorityConnection() == other || cp->yieldConnection() == other;
-//                                        }
-//                                        );
-
-//     if (result != conflictPoints.end())
-//     {
-//         // A conflict was found. Dereference the iterator to get the pointer.
-//         const ConflictPoint* theConflict = *result;
-
-//         // Now, check who has priority *at this specific conflict point*.
-//         // 'self' must yield if it is the 'yieldConnection' in this conflict.
-//         return theConflict->yieldConnection() == self;
-//     }
-
-//     // No conflict exists between self and other
-//     return false;
-// }
+bool UncontrolledIntersection::mustYieldTo(const Connection *ourConn, const ConflictPoint *cp) const
+{
+    if (cp->isPriority(ourConn)) return ourConn->roadwayPriority() < cp->yieldConnection()->roadwayPriority();
+    else return ourConn->roadwayPriority() <= cp->priorityConnection()->roadwayPriority();
+}
 
 const IntersectionDecisionData UncontrolledIntersection::conflictsMustYieldTo(const Connection *conn, const std::vector<std::unique_ptr<Vehicle>>& allVehicles) const
 {
     IntersectionDecisionData decisionData;
+    decisionData.mustPerformFullStop = (conn->roadwayPriority() == PriorityType::Stop);
+
     for (const auto& cp : intersection_->conflictManager()->conflicts(conn))
     {
         if (cp->classify() == ConflictPoint::ConflictType::Diverging) continue;
+        if (!mustYieldTo(conn, cp)) continue;
 
-        if (cp->isPriority(conn))
+        // here priorityConn meaning having higher priority level as deduced above
+        // cp->priorityConnection, priority when compared to other member (right hand rule)
+        const Connection* priorityConn = (cp->priorityConnection() == conn)
+                                             ? cp->yieldConnection()
+                                             : cp->priorityConnection();
+
+        std::vector<PriorityVehicleInfo> foundVehicles;
+
+        for (const auto& vehicle : allVehicles)
         {
-            if (conn->roadwayPriority() >= cp->yieldConnection()->roadwayPriority()) continue; // roadway priority (regulatory signs) takes precedence over conflict point priority (right hand rule)
+            const auto* traversable = vehicle->traversable();
 
-            ConflictData cpData;
+            // filter irrelevant vehicles (not on conflict connection or approaching lane)
+            if (traversable != priorityConn && traversable != priorityConn->source()) continue;
 
-            for (const auto& vehicle : allVehicles)
-            {
-                // filter irrelevant vehicles (not on conflict connection or approaching lane)
-                const ITraversable* priorityConn = static_cast<const ITraversable*>(cp->yieldConnection());
-                const ITraversable* sourceLane = static_cast<const ITraversable*>(cp->yieldConnection()->source());
+            qreal distance = (traversable == priorityConn)
+                                ? cp->distanceFrom(priorityConn) - vehicle->progress()
+                                : priorityConn->source()->length(geometry_) - vehicle->progress() + cp->distanceFrom(priorityConn);
 
-                if (vehicle->traversable() != priorityConn && vehicle->traversable() != sourceLane) continue;
-
-                PriorityVehicleInfo vehicleInfo;
-                vehicleInfo.distanceToConflictPoint = cp->distanceFromYield() - vehicle->progress();
-                vehicleInfo.vehicle = vehicle.get();
-
-                cpData.priorityVehicles.emplace_back(vehicleInfo);
-            }
-            cpData.point = cp;
-            decisionData.conflictsToEvaluate.emplace_back(cpData);
+            foundVehicles.emplace_back(PriorityVehicleInfo{vehicle.get(), distance});
         }
-        else
-        {
-            if (conn->roadwayPriority() > cp->priorityConnection()->roadwayPriority()) continue;
 
-            ConflictData cpData;
-
-            for (const auto& vehicle : allVehicles)
-            {
-                // filter irrelevant vehicles (not on conflict connection or approaching lane)
-                const ITraversable* priorityConn = static_cast<const ITraversable*>(cp->priorityConnection());
-                const ITraversable* sourceLane = static_cast<const ITraversable*>(cp->priorityConnection()->source());
-
-                if (vehicle->traversable() != priorityConn && vehicle->traversable() != sourceLane) continue;
-
-                PriorityVehicleInfo vehicleInfo;
-                vehicleInfo.distanceToConflictPoint = cp->distanceFromYield() - vehicle->progress();
-                vehicleInfo.vehicle = vehicle.get();
-
-                cpData.priorityVehicles.emplace_back(vehicleInfo);
-            }
-            cpData.point = cp;
-            decisionData.conflictsToEvaluate.emplace_back(cpData);
-        }
+        if (!foundVehicles.empty()) decisionData.conflictsToEvaluate.emplace_back(ConflictData{cp, foundVehicles});
     }
-    if (conn->roadwayPriority() == PriorityType::Stop)
-        decisionData.mustPerformFullStop = true;
-    else
-        decisionData.mustPerformFullStop = false;
 
     qDebug() << "decisionData:" << decisionData;
     return decisionData;

@@ -4,14 +4,15 @@
 #include "geometrymanager.h"
 #include "intersection.h"
 #include "trafficmanager.h"
+#include <QDebug>
 
 Vehicle::Vehicle(const GeometryManager* networkGeometry, Lane* initialLane, TrafficManager* trafficManager, qreal initialPosition)
     : networkGeometry_{ networkGeometry }
     , currentTraversable_{ static_cast<ITraversable*>(initialLane) }
     , progress_{ initialPosition }
     , hasReachedDestination_{ false }
-    , currentSpeed_{ 0.0 } // ~50 km/h
-    , targetSpeed_{ 13.89}
+    , currentSpeed_{ 13.89 } // ~50 km/h
+    , targetSpeed_{ 13.89 }
     , currentAcceleration_{ 0.0 }
     , angle_{ 0.0 }
     , color_{ Qt::blue }
@@ -22,6 +23,7 @@ Vehicle::Vehicle(const GeometryManager* networkGeometry, Lane* initialLane, Traf
     , maxDeceleration_{ -5.0 }
     , state_{ VehicleState::Proceeding }
     , trafficManager_{ trafficManager }
+    , pidController_{ VehiclePID(this) }
 {
     updatePositionAndAngle();
 }
@@ -31,24 +33,27 @@ void Vehicle::update(qreal deltaTime)
     if (distanceToStopLine() <= decisionDistance() && state_ != VehicleState::Stopping)
         updateDecision();
 
+    qreal distanceToTarget = 9999;
     if (state_ == VehicleState::Proceeding)
     {
-        currentAcceleration_ = maxAcceleration_;
+        pidController_.mode(VehiclePID::Cruising);
     }
 
-    if (state_ == VehicleState::Stopping)
+    else if (state_ == VehicleState::Yielding || state_ == VehicleState::Stopping || state_ == VehicleState::Waiting)
     {
-        stopping(distanceToStopLine());
+        pidController_.mode(VehiclePID::Stopping);
+        distanceToTarget = distanceToStopLine();
+        qDebug() << "Yielding " << this;
     }
 
-    if (state_ == VehicleState::Waiting)
-    {
-        currentAcceleration_ = 0.0;
-        currentSpeed_ = 0.0;
-    }
-    else
-        applyPhysics(deltaTime);
+    pidController_.update(distanceToTarget, deltaTime, targetSpeed_);
+    applyPhysics(deltaTime);
 
+    updatePositionAndAngle();
+}
+
+void Vehicle::updatePositionAndAngle()
+{
     // Temporary logic for switching traversables before pathfinding and routing implementation
     if (progress_ >= currentTraversable_->length(networkGeometry_))
     {
@@ -64,12 +69,7 @@ void Vehicle::update(qreal deltaTime)
             return;
         }
     }
-
-    updatePositionAndAngle();
-}
-
-void Vehicle::updatePositionAndAngle()
-{
+    //
     const QPainterPath* currentPath = &currentTraversable_->path(networkGeometry_);
     if (!currentPath || currentPath->isEmpty()) return;
 
@@ -79,19 +79,6 @@ void Vehicle::updatePositionAndAngle()
 
     position_ = currentPath->pointAtPercent(percent);
     angle_ = currentPath->angleAtPercent(percent);
-}
-
-void Vehicle::stopping(qreal distanceToStopPoint)
-{
-    if (distanceToStopPoint <= comfortableDeceleration_ && distanceToStopPoint > 0.1)
-    {
-        qreal requiredDeceleration = currentSpeed_ * currentSpeed_ / (2 * comfortableDeceleration_);
-        currentAcceleration_ = std::max(requiredDeceleration, maxDeceleration_);
-    }
-    else if (currentSpeed_ > 0 && distanceToStopPoint <= 0.1)
-    {
-        currentAcceleration_ = maxDeceleration_;
-    }
 }
 
 qreal Vehicle::distanceToStopLine()
@@ -121,64 +108,125 @@ void Vehicle::applyPhysics(qreal deltaTime)
     progress_ += currentSpeed_ * deltaTime;
 }
 
+const qreal MAX_SPEED{ 13.88 };             // m/s
 const qreal PERCIEVED_SAFETY_MARGIN{ 1.5 }; // s
 void Vehicle::updateDecision()
 {
     const IntersectionDecisionData decisionData = currentTraversable_->intersection()->controller()->decisionData(this, trafficManager_->vehicles());
-    if (decisionData.mustPerformFullStop == true) state_ = VehicleState::Stopping;
 
+    if (decisionData.mustPerformFullStop)
+    {
+        state_ = VehicleState::Stopping;
+        return;
+    }
+
+    bool canProceed = canSafelyProceed(decisionData);
+    setNextState(canProceed);
+}
+
+bool Vehicle::canSafelyProceed(const IntersectionDecisionData &decisionData) const
+{
     for (const auto& conflict : decisionData.conflictsToEvaluate)
     {
-        qreal distanceToConflict;
-        if (currentTraversable_->type() == ITraversable::TraversableType::Lane)
+        qreal distanceToConflict = calculateDistanceToConflict(conflict);
+        // If the path is invalid or blocked, skip this conflict evaluation.
+        if (distanceToConflict < 0)
         {
-            auto* lane = static_cast<const Lane*>(currentTraversable_);
-            const auto& nextTraversables = lane->next();
-            if (nextTraversables.empty())
-            {
-                continue; // Skip this conflict if no path forward
-            }
-            distanceToConflict = lane->length(networkGeometry_) - progress_ + conflict.point->distanceFrom(static_cast<const Connection*>(nextTraversables[0]));
+            continue;
         }
-        else
-        {
-            auto* conn = static_cast<const Connection*>(currentTraversable_);
-            distanceToConflict = conflict.point->distanceFrom(conn) - progress_;
-        }
-        qreal thisApproachTime;
-        qreal v_cap = 13.88; // m/s
 
-        qreal s_accelThis = (v_cap * v_cap - currentSpeed_ * currentSpeed_) / (2 * maxAcceleration_);   // distance covered by trying to reach max speed by constant acceleration
-        if (s_accelThis > distanceToConflict)
-            thisApproachTime = std::max((-currentSpeed_ + std::sqrt(currentSpeed_ * currentSpeed_ + 2 * maxAcceleration_ * distanceToConflict)) / maxAcceleration_,
-                                        (-currentSpeed_ - std::sqrt(currentSpeed_ * currentSpeed_ + 2 * maxAcceleration_ * distanceToConflict)) / maxAcceleration_);
-        else
-            thisApproachTime = (v_cap - currentSpeed_) / maxAcceleration_ + (distanceToConflict - s_accelThis) / v_cap;
-
+        qreal thisApproachTime = calculateTimeToReach(distanceToConflict, currentSpeed_, maxAcceleration_, MAX_SPEED);
 
         for (const auto& other : conflict.priorityVehicles)
         {
-            qreal basicApproachTime = other.distanceToConflictPoint / other.vehicle->speed();
-            qreal accelAdjustedApproachTime;
-            if (other.vehicle->acceleration() > 0.1)
+            // Check if this vehicle can clear the conflict point well before the other vehicle arrives.
+            if (!isSufficientlyAheadOf(thisApproachTime, other))
             {
-                qreal t_accel = (v_cap - other.vehicle->speed()) / other.vehicle->acceleration();
-                qreal s_accel = (v_cap * v_cap - other.vehicle->speed() * other.vehicle->speed()) / (2 * other.vehicle->acceleration());
-                if (s_accel > other.distanceToConflictPoint)
-                {
-                    accelAdjustedApproachTime = std::max((-other.vehicle->speed() + std::sqrt(other.vehicle->speed() * other.vehicle->speed() + 2 * other.vehicle->acceleration() * distanceToConflict)) / other.vehicle->acceleration(),
-                                                         (-other.vehicle->speed() - std::sqrt(other.vehicle->speed() * other.vehicle->speed() + 2 * other.vehicle->acceleration() * distanceToConflict)) / other.vehicle->acceleration());
-                }
-                accelAdjustedApproachTime = t_accel + (other.distanceToConflictPoint - s_accel) / v_cap;
+                return false; // Unsafe to proceed, so stop checking and return.
             }
-
-            if (thisApproachTime + PERCIEVED_SAFETY_MARGIN < basicApproachTime &&
-                thisApproachTime + PERCIEVED_SAFETY_MARGIN < accelAdjustedApproachTime)
-                state_ = VehicleState::Proceeding;
-            else if (currentSpeed_ > 0)
-                state_ = VehicleState::Yielding;
-            else
-                state_ = VehicleState::Waiting;
         }
+    }
+
+    return true; // No conflicts found, it's safe to proceed.
+}
+
+bool Vehicle::isSufficientlyAheadOf(qreal thisApproachTime, const PriorityVehicleInfo &other) const
+{
+    // A simple estimate assuming the other vehicle maintains its current speed.
+    qreal otherApproachTime = other.distanceToConflictPoint / other.vehicle->speed();
+
+    // A more precise estimate that accounts for the other vehicle's potential acceleration.
+    qreal otherAccelAdjustedApproachTime = calculateTimeToReach(
+        other.distanceToConflictPoint,
+        other.vehicle->speed(),
+        other.vehicle->acceleration(),
+        MAX_SPEED
+        );
+
+    // We must be faster than both estimates plus the safety margin.
+    return (thisApproachTime + PERCIEVED_SAFETY_MARGIN < otherApproachTime) &&
+           (thisApproachTime + PERCIEVED_SAFETY_MARGIN < otherAccelAdjustedApproachTime);
+}
+
+qreal Vehicle::calculateTimeToReach(qreal distance, qreal initialSpeed, qreal acceleration, qreal maxSpeed) const
+{
+    if (qAbs(acceleration) < 1e-6)
+    {
+        return distance / initialSpeed;
+    }
+
+    qreal distanceToAccelerate = (maxSpeed * maxSpeed - initialSpeed * initialSpeed) / (2 * acceleration);
+
+    if (distanceToAccelerate >= distance)
+    {
+        // Vehicle reaches the point before or at the moment of achieving maxSpeed.
+        // Solves for t from the kinematic equation: d = v₀t + ½at²
+        // The positive root of the quadratic formula is used.
+        qreal discriminant = initialSpeed * initialSpeed + 2 * acceleration * distance;
+        return (-initialSpeed + std::sqrt(discriminant)) / acceleration;
+    }
+    else
+    {
+        // Vehicle accelerates to maxSpeed and then cruises at constant speed.
+        qreal timeToAccelerate = (maxSpeed - initialSpeed) / acceleration;
+        qreal distanceCruising = distance - distanceToAccelerate;
+        qreal timeCruising = distanceCruising / maxSpeed;
+        return timeToAccelerate + timeCruising;
+    }
+}
+
+qreal Vehicle::calculateDistanceToConflict(const ConflictData &conflict) const
+{
+    if (currentTraversable_->type() == ITraversable::TraversableType::Lane)
+    {
+        auto* lane = static_cast<const Lane*>(currentTraversable_);
+        const auto& nextTraversables = lane->next();
+        if (nextTraversables.empty())
+        {
+            return std::numeric_limits<qreal>::max();
+        }
+        return lane->length(networkGeometry_) - progress_ +
+               conflict.point->distanceFrom(static_cast<const Connection*>(nextTraversables[0]));
+    }
+    else // Assumes the type is Connection
+    {
+        auto* conn = static_cast<const Connection*>(currentTraversable_);
+        return conflict.point->distanceFrom(conn) - progress_;
+    }
+}
+
+void Vehicle::setNextState(bool canProceed)
+{
+    if (canProceed)
+    {
+        state_ = VehicleState::Proceeding;
+    }
+    else if (currentSpeed_ > 0)
+    {
+        state_ = VehicleState::Yielding;
+    }
+    else
+    {
+        state_ = VehicleState::Queued;
     }
 }

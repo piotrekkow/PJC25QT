@@ -16,7 +16,7 @@ void Roadway::priority(PriorityType priority)
 {
     if (priority == PriorityType::Priority)
     {
-        if (!destinationIntersection_->reachedPriorityRoadwayLimit())
+        if (destinationIntersection_->reachedPriorityRoadwayLimit())
         {
             priority = PriorityType::Yield;
             qDebug() << "Lowered roadway priority level due to reaching limit (2) of priority roadways at intersection";

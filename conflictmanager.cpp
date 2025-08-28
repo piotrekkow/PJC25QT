@@ -38,7 +38,7 @@ void ConflictManager::recalculate()
             const auto* connA = connections[i].get();
             const auto* connB = connections[j].get();
 
-            if (connA->source() == connB->source()) continue;
+            // if (connA->source() == connB->source()) continue;    // optionally dont calculate diverging conflict points
 
             const Connection* priorityConnection = connA;
             const Connection* yieldConnection = connB;

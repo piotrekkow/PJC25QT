@@ -2,6 +2,7 @@
 
 #include <QDebug>
 #include "IntersectionDecisionData.h"
+#include "conflictpoint.h"
 
 /**
  *  IntersectionDecisionData debug overloads
@@ -20,7 +21,7 @@ QDebug operator<<(QDebug debug, const PriorityVehicleInfo& info) {
 QDebug operator<<(QDebug debug, const ConflictData& data) {
     QDebugStateSaver saver(debug);
     // Let QDebug handle indentation and newlines automatically with maybeSpace() and maybeNewline()
-    debug.nospace() << "ConflictData(Point: " << data.point;
+    debug.nospace() << "ConflictData(Point: " << data.point->position().x() << ", " << data.point->position().y();
     debug.maybeSpace() << "Vehicles: " << data.priorityVehicles << ")";
     return debug;
 }

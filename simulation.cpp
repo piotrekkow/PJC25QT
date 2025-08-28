@@ -52,7 +52,7 @@ void Simulation::initialize()
 
     is1->createConnection(r2->backwardRoadway()->lanes()[0].get(), r5->forwardRoadway()->lanes()[0].get());
 
-    // r2->backwardRoadway()->priority(PriorityType::Priority);
+    r2->backwardRoadway()->priority(PriorityType::Priority);
     traffic_->createVehicle(r2->backwardRoadway()->lanes()[0].get());
     traffic_->createVehicle(r3->backwardRoadway()->lanes()[0].get());
 

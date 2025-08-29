@@ -1,63 +1,49 @@
 #pragma once
 #include <qtypes.h>
 
-enum class DrivingBehavior {
-    StopAtPoint,
-    FollowVehicle,
-    AdaptiveCruise,
-    EmergencyBrake
-};
-
 class VehiclePID
 {
 public:
     struct Input {
-        DrivingBehavior action;
-        qreal currentSpeed;
         qreal deltaTime;
-
-        // Scenario-specific data
-        qreal desiredCruiseSpeed;
-
-        // Stop scenario
-        qreal distanceToStopPoint = 0.0;
-
-        // Following scenario
-        qreal leadVehicleSpeed = 0.0;
-        qreal leadVehicleDistance = 0.0;
-        qreal leadVehicleAcceleration = 0.0; // Optional: for predictive following
+        qreal egoSpeed;
+        qreal egoAcceleration;
+        qreal egoDesiredSpeed;
+        qreal leaderSpeed;
+        qreal egoLeaderGap;
+        qreal distanceToStop;
 
         const qreal maxAcceleration;
-        const qreal comfortableDeceleration;
         const qreal maxDeceleration;
-
-        const qreal safetyTimeGap;
-        const qreal safetyMinDistance;
+        const qreal comfAcceleration;
+        const qreal comfDeceleration;
+        const qreal accelJerk;
+        const qreal decelJerk;
+        const qreal comfTimeGap;
+        const qreal comfDistanceGap;
+        const qreal pidDecisionCutoff;  // if vehicle is further than this it won't be considered for stopping
     };
 
 private:
     qreal kp_;
     qreal ki_;
     qreal kd_;
+    qreal kpStop_;
+    qreal kdStop_;
+    qreal kpCruise_;
+    qreal kdCruise_;
     qreal integral_;
-    qreal previousError_;
-    qreal previousAccel_; // for rate limiting
-    bool firstRun_;
+    qreal previousReferenceSpeed_;
+    qreal previousEgoSpeed_;
 
 public:
     VehiclePID();
-    VehiclePID(qreal kp, qreal ki, qreal kd);
+    VehiclePID(qreal kp, qreal ki, qreal kd, qreal kpStop, qreal kdStop, qreal kpCruise, qreal kdCruise);
 
     qreal calculateAcceleration(const Input& input);
-    void gains(qreal kp, qreal ki, qreal kd);
+    void gains(qreal kp, qreal ki, qreal kd, qreal kpStop, qreal kdStop, qreal kpCruise, qreal kdCruise);
     void reset();
 
 private:
-    qreal applyPIDControl(qreal targetSpeed, const Input& input);
-    qreal calculateTargetSpeed(const Input& input);
-    qreal applyHumanLikeConstraints(qreal requestedAccel, const Input& input);
-    qreal calculateSituationFactor(const Input& input);
-    qreal applyRateLimiting(qreal requestedAccel, qreal deltaTime);
-    qreal calculateStopTargetSpeed(const Input& input);
-    qreal calculateAdaptiveTargetSpeed(const Input& input);
+    qreal applyJerkAndLimits(const Input& input, qreal& reqAccel);
 };

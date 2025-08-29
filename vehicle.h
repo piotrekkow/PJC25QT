@@ -14,14 +14,7 @@ struct ConflictData;
 
 class Vehicle
 {
-    enum class Decision
-    {
-        StoppingAtStopSign,
-        Yielding,
-        Proceeding
-    };
-
-    const GeometryManager* networkGeometry_;
+    const GeometryManager* geometryManager_;
     ITraversable* currentTraversable_;
     qreal progress_;
     bool hasReachedDestination_;
@@ -38,11 +31,10 @@ class Vehicle
     qreal width_;
 
     qreal maxAcceleration_;          // m/s^2, e.g., 3.0
+    qreal comfortableAcceleration_;
     qreal comfortableDeceleration_;  // m/s^2, e.g., 2.5 (used for normal yielding)
     qreal maxDeceleration_;          // m/s^2, e.g., 8.0 (used for emergency stops)
 
-    Decision decision_;
-    DrivingBehavior behavior_;
     const TrafficManager* trafficManager_;
     VehiclePID pidController_;
     qreal safetyTimeGap_{ 2.0 };
@@ -68,6 +60,7 @@ public:
 private:
     void updatePositionAndAngle();
     qreal distanceToStopLine();
+    void updateStoppingPoint();
 
     void applyPhysics(qreal deltaTime);
     void updateDecision();

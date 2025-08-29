@@ -2,176 +2,91 @@
 #include "vehicle.h"
 #include <QDebug>
 
-VehiclePID::VehiclePID(qreal kp, qreal ki, qreal kd)
+VehiclePID::VehiclePID(qreal kp, qreal ki, qreal kd, qreal kpStop, qreal kdStop, qreal kpCruise, qreal kdCruise)
     : kp_{ kp }
     , ki_{ ki }
     , kd_{ kd }
-    , previousAccel_{ 0.0 }
-    , firstRun_{ true }
+    , kpStop_{ kpStop }
+    , kdStop_{ kdStop }
+    , kpCruise_{ kpCruise }
+    , kdCruise_{ kdCruise }
+    , previousReferenceSpeed_{ 13.89 }
+    , previousEgoSpeed_{ 13.89 }
 {}
 
 VehiclePID::VehiclePID()
-    : VehiclePID(2.0, 0.1, 0.4)
+    : VehiclePID(8.0, 0.4, 0.02, 0.6, 0.4, 0.7, 0.4)
 {}
 
-void VehiclePID::gains(qreal kp, qreal ki, qreal kd)
+void VehiclePID::gains(qreal kp, qreal ki, qreal kd, qreal kpStop, qreal kdStop, qreal kpCruise, qreal kdCruise)
 {
     kp_ = kp;
     ki_ = ki;
     kd_ = kd;
+    kpStop_ = kpStop;
+    kdStop_ = kdStop;
+    kpCruise_ = kpCruise;
+    kdCruise_ = kdCruise;
 }
 
 qreal VehiclePID::calculateAcceleration(const Input &input)
 {
-    qreal targetSpeed = calculateTargetSpeed(input);
-    return applyPIDControl(targetSpeed, input);
-}
+    qreal reqFollowingAccel, reqStoppingAccel, gapError, referenceSpeed;
 
-qreal VehiclePID::applyPIDControl(qreal targetSpeed, const Input &input)
-{
-    if (firstRun_)
+    // PID following controler
+    if (input.egoLeaderGap < input.egoSpeed * input.egoSpeed)
     {
-        reset();
-        firstRun_ = false;
+        qreal gapDesired = input.comfDistanceGap + input.comfTimeGap * input.leaderSpeed;
+        gapError = input.egoLeaderGap - gapDesired;
+        qreal relativeSpeed = input.egoSpeed - input.leaderSpeed;
+
+        reqFollowingAccel = kp_ * gapError - kd_ * relativeSpeed + ki_ * integral_;
     }
-
-    // PID error calculation
-    qreal speedError = targetSpeed - input.currentSpeed;
-
-    // Update integral with windup protection
-    integral_ += speedError * input.deltaTime;
-    integral_ = std::clamp(integral_, -10.0, 10.0); // Prevent windup
-
-    // Calculate derivative
-    qreal derivative = 0.0;
-    if (input.deltaTime > 0.001) { // Avoid division by zero
-        derivative = (speedError - previousError_) / input.deltaTime;
-    }
-
-    // PID output
-    qreal pidOutput = kp_ * speedError + ki_ * integral_ + kd_ * derivative;
-
-    // Apply human-like constraints and smoothing
-    qreal finalAccel = applyHumanLikeConstraints(pidOutput, input);
-
-    // Update previous error for next iteration
-    previousError_ = speedError;
-
-    return finalAccel;
-}
-
-qreal VehiclePID::calculateTargetSpeed(const Input &input)
-{
-    switch (input.action)
+    else
     {
-        case DrivingBehavior::StopAtPoint:
-            return calculateStopTargetSpeed(input);
-
-        case DrivingBehavior::FollowVehicle:
-        //    return calculateFollowTargetSpeed(input);
-
-        case DrivingBehavior::AdaptiveCruise:
-            return calculateAdaptiveTargetSpeed(input);
-
-        case DrivingBehavior::EmergencyBrake:
-            return 0.0;
+        reqFollowingAccel = std::numeric_limits<qreal>::max();
+        gapError = 0;
     }
-    return input.desiredCruiseSpeed;
+
+    // PD stop controller
+    if (input.distanceToStop < input.egoSpeed * input.egoSpeed)
+    {
+        // qreal effectiveDecel = 0.7 * input.comfDeceleration; // coefficient in order to counteract jerk and inertia
+        qreal buffer = 0.5 + 1.2 * input.egoSpeed;
+        referenceSpeed = std::sqrt(std::max(0.0, 2 * input.comfDeceleration * std::max(0.0, input.distanceToStop - buffer)));
+        qreal speedError = referenceSpeed - input.egoSpeed;
+        qreal accelerationError = (referenceSpeed - previousReferenceSpeed_) / input.deltaTime - (input.egoSpeed - previousEgoSpeed_) / input.deltaTime;
+        reqStoppingAccel = kpStop_ * speedError + kdStop_ * accelerationError;
+    }
+    else
+    {
+        referenceSpeed = input.egoSpeed;
+        reqStoppingAccel = std::numeric_limits<qreal>::max();
+    }
+
+    // PD cruise control controller
+    qreal speedError = input.egoDesiredSpeed - input.egoSpeed;
+    qreal derivative = (-input.egoSpeed + previousEgoSpeed_) / input.deltaTime;
+    qreal reqCruiseAccel = kpCruise_ * speedError + kdCruise_ * derivative;
+    reqCruiseAccel = std::min(reqCruiseAccel, input.comfAcceleration);
+
+    previousEgoSpeed_ = input.egoSpeed;
+    previousReferenceSpeed_ = referenceSpeed;
+    integral_ += gapError * input.deltaTime;
+    std::clamp(integral_, -10.0, 10.0);
+
+    qreal reqAccel = std::min({reqFollowingAccel, reqStoppingAccel, reqCruiseAccel});
+    return applyJerkAndLimits(input, reqAccel);
 }
 
-qreal VehiclePID::applyHumanLikeConstraints(qreal requestedAccel, const Input &input)
+qreal VehiclePID::applyJerkAndLimits(const Input &input, qreal& reqAccel)
 {
+    qreal maxChange = (reqAccel > input.egoAcceleration) ? input.accelJerk * input.deltaTime
+                                                         : input.decelJerk * input.deltaTime;
 
-    qreal maxComfortAccel = input.maxAcceleration;
-    qreal maxComfortDecel = input.comfortableDeceleration;
+    reqAccel = std::clamp(reqAccel,
+                          input.egoAcceleration - maxChange,
+                          input.egoAcceleration + maxChange);
 
-    // Check for emergency conditions
-    if (input.action == DrivingBehavior::EmergencyBrake) {
-        return input.maxDeceleration;
-    }
-
-    requestedAccel = applyRateLimiting(requestedAccel, input.deltaTime);
-
-    // Final constraint to comfort/safety limits
-    return std::clamp(requestedAccel, maxComfortDecel, maxComfortAccel);
-}
-
-qreal VehiclePID::calculateSituationFactor(const Input &input)
-{
-    // Factor representing urgency/distance (0.0 = close/urgent, 1.0 = far/relaxed)
-    qreal distanceFactor = 1.0;
-
-    // Consider stop point distance
-    if (input.action == DrivingBehavior::StopAtPoint) {
-        distanceFactor = std::min(distanceFactor,
-                                  std::min(1.0, input.distanceToStopPoint / 100.0));
-    }
-
-    // Consider lead vehicle distance
-    if (input.action == DrivingBehavior::FollowVehicle) {
-        qreal desiredFollowDistance = input.currentSpeed * 2.0; // 2-second rule
-        distanceFactor = std::min(distanceFactor,
-                                  std::min(1.0, input.leadVehicleDistance / desiredFollowDistance));
-    }
-
-    return distanceFactor;
-}
-
-qreal VehiclePID::applyRateLimiting(qreal requestedAccel, qreal deltaTime)
-{
-    const qreal accelerationJerk = 16.0; // m/s^3 - A higher value for a more responsive feel when accelerating.
-    const qreal brakingJerk = 4.0;      // m/s^3 - A lower value for smoother, more comfortable braking.
-
-    qreal maxChange;
-
-    if (requestedAccel > previousAccel_) {
-        maxChange = accelerationJerk * deltaTime;
-    } else {
-        maxChange = brakingJerk * deltaTime;
-    }
-
-    qreal limitedAccel = std::clamp(requestedAccel,
-                                    previousAccel_ - maxChange,
-                                    previousAccel_ + maxChange);
-
-    previousAccel_ = limitedAccel;
-    return limitedAccel;
-}
-
-qreal VehiclePID::calculateStopTargetSpeed(const Input &input)
-{
-    // If we are very close to the stop point, the target is 0 to prevent overshooting.
-    const qreal stopThreshold = 0.3; // meters
-    if (input.distanceToStopPoint < stopThreshold) {
-        return 0.0;
-    }
-
-    // Calculate the ideal speed based on the braking curve.
-    // Based on the kinematic equation: v_target = sqrt(2 * deceleration * distance)
-    // We use max(0.0, ...) to prevent a domain error in sqrt if the distance is negative.
-    qreal distance = std::max(0.0, input.distanceToStopPoint);
-    qreal targetSpeed = std::sqrt(2.0 * -input.comfortableDeceleration * distance);
-
-    // The target speed should not exceed the driver's desired cruise speed.
-    // The vehicle shouldn't speed up just to match a distant braking profile.
-    targetSpeed = std::min(targetSpeed, input.desiredCruiseSpeed);
-
-    // Final safety check to ensure we don't return a negative speed.
-    return std::max(0.0, targetSpeed);
-}
-
-qreal VehiclePID::calculateAdaptiveTargetSpeed(const Input &input)
-{
-    qreal stopTarget = calculateStopTargetSpeed(input);
-    // qreal followTarget = calculateFollowTargetSpeed(input);
-
-    return stopTarget;
-    // return std::min(stopTarget, followTarget)
-}
-
-void VehiclePID::reset() {
-    integral_ = 0.0;
-    previousError_ = 0.0;
-    previousAccel_ = 0.0;
-    firstRun_ = true;
+    return std::clamp(reqAccel, -input.maxDeceleration, input.maxAcceleration);
 }

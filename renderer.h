@@ -3,16 +3,16 @@
 #include <QGraphicsScene>
 
 class RoadNetwork;
-class TrafficManager;
+class Traffic;
 
 class Renderer
 {
     QGraphicsScene* scene_;
     const RoadNetwork* network_;
-    const TrafficManager* traffic_;
+    const Traffic* traffic_;
 
 public:
-    Renderer(QGraphicsScene* scene, const RoadNetwork* network, const TrafficManager *traffic);
+    Renderer(QGraphicsScene* scene, const RoadNetwork* network, const Traffic *traffic);
     void draw() const;
 
 private:

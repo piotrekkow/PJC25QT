@@ -42,7 +42,9 @@ public:
     QPointF position() const { return position_; }
     qreal distanceFromPriority() const { return distanceFromPriority_; }
     qreal distanceFromYield() const { return distanceFromYield_; }
-    bool isPriority(const Connection* c) const { return c == priorityConnection_; }
+
+    /// Connection c has right hand priority?
+    bool isRHPriority(const Connection* c) const { return c == priorityConnection_; }
 
     qreal distanceFrom(const Connection* connection) const
     {
@@ -59,5 +61,12 @@ public:
         if (sameDst) return ConflictType::Merging;
         if (sameSrc) return ConflictType::Diverging;
         return ConflictType::Crossing;
+    }
+
+    const Connection* otherConnection(const Connection* connection)
+    {
+        if (connection == priorityConnection_) return yieldConnection_;
+        if (connection == yieldConnection_) return priorityConnection_;
+        throw std::invalid_argument("Provided connection not part of this conflict point.");
     }
 };

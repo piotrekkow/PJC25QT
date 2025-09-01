@@ -1,23 +1,12 @@
 #include "lane.h"
 #include "roadway.h"
 #include "geometrymanager.h"
+#include "navigationstrategy.h"
 
-Lane::Lane(Roadway* parent, std::optional<qreal> length, qreal width)
-    : width_{ width }
-    , length_{ length }
-    , roadway_{ parent }
-{
-}
-
-void Lane::addOutgoingConnection(Connection *connection)
+void Lane::addConnection(const Connection *connection)
 {
     if (!connection) return;
     connections_.emplace_back(connection);
-}
-
-PriorityType Lane::roadwayPriority() const
-{
-    return roadway_->priority();
 }
 
 const QPainterPath &Lane::path(const GeometryManager *geometryManager) const
@@ -25,24 +14,40 @@ const QPainterPath &Lane::path(const GeometryManager *geometryManager) const
     return geometryManager->lane(this);
 }
 
-const Intersection *Lane::intersection() const
-{
-    return roadway_->destination();
-}
-
 qreal Lane::length(const GeometryManager *geometryManager) const
 {
     return geometryManager->lane(this).length();
 }
 
-std::vector<ITraversable *> Lane::next() const
+std::vector<const Traversable *> Lane::next() const
 {
-    std::vector<ITraversable*> nextTraversables;
-    nextTraversables.reserve(connections_.size());
+    std::vector<const Traversable*> next;
+    next.reserve(connections_.size());
     for (auto& c : connections_)
     {
-        nextTraversables.push_back(static_cast<ITraversable*>(c));
+        next.push_back(static_cast<const Traversable*>(c));
     }
-    return nextTraversables;
+    return next;
 }
 
+PriorityType Lane::regulatoryPriority() const
+{
+    return roadway_->priority();
+}
+
+qreal Lane::speedLimit() const
+{
+    return roadway_->speedLimit();
+}
+
+const Intersection *Lane::intersection() const
+{
+    return roadway_->destination();
+}
+
+std::unique_ptr<NavigationStrategy> Lane::createNavigationStrategy(Vehicle *vehicle, const Traffic *traffic, const GeometryManager *geometry) const
+{
+    return std::make_unique<LaneNavigationStrategy>(
+        vehicle, traffic, geometry, this
+        );
+}

@@ -1,221 +1,63 @@
 #include "vehicle.h"
-#include "IntersectionDecisionData.h"
+#include "ConflictData.h"
 #include "lane.h"
 #include "geometrymanager.h"
-#include "intersection.h"
-#include "trafficmanager.h"
+#include "traffic.h"
 #include <QDebug>
 
-Vehicle::Vehicle(const GeometryManager* geometryManager, Lane* initialLane, TrafficManager* trafficManager, qreal initialPosition)
-    : geometryManager_{ geometryManager }
-    , currentTraversable_{ static_cast<ITraversable*>(initialLane) }
-    , progress_{ initialPosition }
-    , hasReachedDestination_{ false }
-    , currentSpeed_{ 13.89 } // ~50 km/h
-    , cruiseSpeed_{ 13.89 }
-    , currentAcceleration_{ 0.0 }
-    , angle_{ 0.0 }
-    , color_{ Qt::blue }
-    , length_{ 4.5 }
-    , width_{ 1.8 }
-    , maxAcceleration_{ 3.0 }
-    , comfortableAcceleration_{ 1.6 }
-    , comfortableDeceleration_{ 2.0 }
-    , maxDeceleration_{ 5.0 }
-    , trafficManager_{ trafficManager }
-    , pidController_{ VehiclePID() }
+Vehicle::Vehicle(Lane *initialLane, const Traffic *traffic, const GeometryManager *geometry)
+    : Agent(initialLane, traffic, geometry, 5.0, 2.0)
+    , acceleration_{ 0.0f }
+    , cruiseSpeed_{ initialLane->speedLimit() }
+    , stoppingController_(8.0, 0.4, 0.02)
+    , followingController_(0.6, 0.4)
+    , cruiseController_(0.7, 0.4)
+{}
+
+std::unique_ptr<Vehicle> Vehicle::create(Lane *initialLane, const Traffic *traffic, const GeometryManager *geometry)
 {
-    updatePositionAndAngle();
+    auto vehicle = std::unique_ptr<Vehicle>(new Vehicle(initialLane, traffic, geometry));
+    vehicle->navigationStrategy_ = initialLane->createNavigationStrategy(vehicle.get(), vehicle->traffic_, vehicle->geometry_);
+    return vehicle;
 }
-
-void Vehicle::update(qreal deltaTime)
-{
-    updateStoppingPoint();
-
-    qreal acceleration = pidController_.calculateAcceleration(pidInput(deltaTime));
-    currentAcceleration_ = acceleration;
-    qDebug() << "vehicle " << this << currentAcceleration_ << nextStopDistance_;
-
-    applyPhysics(deltaTime);
-    updatePositionAndAngle();
-}
-
-void Vehicle::updatePositionAndAngle()
-{
-    // Temporary logic for switching traversables before pathfinding and routing implementation
-    if (progress_ >= currentTraversable_->length(geometryManager_))
-    {
-        const auto& nextTraversables = currentTraversable_->next();
-        if (!nextTraversables.empty())
-        {
-            progress_ -= currentTraversable_->length(geometryManager_);
-            currentTraversable_ = nextTraversables[0];
-        }
-        else
-        {
-            hasReachedDestination_ = true;
-            return;
-        }
-    }
-    //
-    const QPainterPath* currentPath = &currentTraversable_->path(geometryManager_);
-    if (!currentPath || currentPath->isEmpty()) return;
-
-    qreal pathLength = currentPath->length();
-    qreal clampedProgress = std::max(0.0, std::min((qreal)progress_, pathLength));
-    qreal percent = currentPath->percentAtLength(clampedProgress);
-
-    position_ = currentPath->pointAtPercent(percent);
-    angle_ = currentPath->angleAtPercent(percent);
-}
-
-qreal Vehicle::distanceToStopLine()
-{
-    if (currentTraversable_->type() == ITraversable::TraversableType::Connection)
-    {
-        auto* conn = static_cast<const Connection*>(currentTraversable_);
-        return conn->stopLineOffset() - progress_;
-    }
-    else
-    {
-        const auto& nextTraversables = currentTraversable_->next();
-        if (nextTraversables.empty())
-        {
-            return std::numeric_limits<qreal>::max(); // No next stop line
-        }
-        qreal remainingLaneLength = currentTraversable_->length(geometryManager_) - progress_;
-        qreal nextConnectionStopOffset = static_cast<const Connection*>(nextTraversables[0])->stopLineOffset();
-        return remainingLaneLength + nextConnectionStopOffset;
-    }
-}
-
-void Vehicle::updateStoppingPoint()
-{
-    // TODO: Optimize so that when very far from intersection and no valid decision whether to stop can be made - skip this logic
-    //       Possibly calculate next stop distance if next intersection is very close
-    auto* intersectionController = currentTraversable_->intersection()->controller();
-    const IntersectionDecisionData decisionData = intersectionController->decisionData(this, trafficManager_->vehicles());
-
-    nextStopDistance_ = (canSafelyProceed(decisionData)) ? std::numeric_limits<qreal>::max()
-                                                         : distanceToStopLine();
-}
-
-void Vehicle::applyPhysics(qreal deltaTime)
-{
-    currentSpeed_ += currentAcceleration_ * deltaTime;
-    currentSpeed_ = std::clamp(currentSpeed_, 0.0, cruiseSpeed_);
-    progress_ += currentSpeed_ * deltaTime;
-}
-
-bool Vehicle::canSafelyProceed(const IntersectionDecisionData &decisionData) const
-{
-    for (const auto& conflict : decisionData.conflictsToEvaluate)
-    {
-        qreal distanceToConflict = calculateDistanceToConflict(conflict);
-        if (distanceToConflict < 0) continue;
-
-        qreal thisApproachTime = calculateTimeToReach(distanceToConflict, currentSpeed_, maxAcceleration_, cruiseSpeed_);
-
-        for (const auto& other : conflict.priorityVehicles)
-        {
-            // Check if this vehicle can clear the conflict point well before the other vehicle arrives.
-            if (!isSufficientlyAheadOf(thisApproachTime, other))
-            {
-                return false; // Unsafe to proceed, so stop checking and return.
-            }
-        }
-    }
-    return true; // No conflicts found, it's safe to proceed.
-}
-bool Vehicle::isSufficientlyAheadOf(qreal thisApproachTime, const PriorityVehicleInfo &other) const
-{
-    // If the conflict point is behind the other vehicle, we are safely ahead.
-    if (other.distanceToConflictPoint < 0) return true;
-
-    const qreal otherTimeToConflict = (other.vehicle->acceleration() > 0.2)
-                                          ? calculateTimeToReach(
-                                                other.distanceToConflictPoint,
-                                                other.vehicle->speed(),
-                                                other.vehicle->acceleration(),
-                                                13.88) // TODO: Replace with a dynamic value, e.g., speed limit.
-                                          : other.distanceToConflictPoint / other.vehicle->speed();
-
-    // Check if our vehicle will clear the conflict point with a sufficient safety margin.
-    return thisApproachTime + safetyTimeGap_ < otherTimeToConflict;
-}
-
-qreal Vehicle::calculateTimeToReach(qreal distance, qreal initialSpeed, qreal acceleration, qreal maxSpeed) const
-{
-    if (qAbs(acceleration) < 1e-6)
-    {
-        return distance / initialSpeed;
-    }
-
-    qreal distanceToAccelerate = (maxSpeed * maxSpeed - initialSpeed * initialSpeed) / (2 * acceleration);
-
-    if (distanceToAccelerate >= distance)
-    {
-        // Vehicle reaches the point before or at the moment of achieving maxSpeed.
-        // Solves for t from the kinematic equation: d = v₀t + ½at²
-        // The positive root of the quadratic formula is used.
-        qreal discriminant = initialSpeed * initialSpeed + 2 * acceleration * distance;
-        return (-initialSpeed + std::sqrt(discriminant)) / acceleration;
-    }
-    else
-    {
-        // Vehicle accelerates to maxSpeed and then cruises at constant speed.
-        qreal timeToAccelerate = (maxSpeed - initialSpeed) / acceleration;
-        qreal distanceCruising = distance - distanceToAccelerate;
-        qreal timeCruising = distanceCruising / maxSpeed;
-        return timeToAccelerate + timeCruising;
-    }
-}
-
-qreal Vehicle::calculateDistanceToConflict(const ConflictData &conflict) const
-{
-    if (currentTraversable_->type() == ITraversable::TraversableType::Lane)
-    {
-        auto* lane = static_cast<const Lane*>(currentTraversable_);
-        const auto& nextTraversables = lane->next();
-        if (nextTraversables.empty())
-        {
-            return std::numeric_limits<qreal>::max();
-        }
-        return lane->length(geometryManager_) - progress_ +
-               conflict.point->distanceFrom(static_cast<const Connection*>(nextTraversables[0]));
-    }
-    else // Assumes the type is Connection
-    {
-        auto* conn = static_cast<const Connection*>(currentTraversable_);
-        return conflict.point->distanceFrom(conn) - progress_;
-    }
-}
-
-VehiclePID::Input Vehicle::pidInput(qreal deltaTime)
-{
-    return {
-        .deltaTime = deltaTime,
-        .egoSpeed = currentSpeed_,
-        .egoAcceleration = currentAcceleration_,
-        .egoDesiredSpeed = cruiseSpeed_,
-        .leaderSpeed = 999.0,
-        .egoLeaderGap = 999.0,
-        .distanceToStop = nextStopDistance_,
-        .maxAcceleration = maxAcceleration_,
-        .maxDeceleration = maxDeceleration_,
-        .comfAcceleration = comfortableAcceleration_,
-        .comfDeceleration = comfortableDeceleration_,
-        .accelJerk = 10.0,
-        .decelJerk = 5.0,
-        .comfTimeGap = safetyTimeGap_,
-        .comfDistanceGap = safetyMinDistance_,
-        .pidDecisionCutoff = decisionDistance()
-    };
-}
-
 
 qreal Vehicle::decisionDistance() const
 {
     // allows for a very comfortable margin for stopping at 1 m/s^2, reasonable substitute for infinity
-    return currentSpeed_ * currentSpeed_ / 2;
+    return speed_ * speed_ / 2;
+}
+
+void Vehicle::applyPhysics(qreal deltaTime)
+{
+    speed_ += acceleration_ * deltaTime;
+    Agent::applyPhysics(deltaTime);
+}
+
+std::unique_ptr<NavigationStrategy> Vehicle::createNavigationStrategyFor(const Traversable *newTraversable)
+{
+    if (const VehicleTraversable* vehTraversable = dynamic_cast<const VehicleTraversable*>(newTraversable))
+    {
+        return vehTraversable->createNavigationStrategy(this, traffic_, geometry_);
+    }
+    return nullptr;
+}
+
+qreal Vehicle::timeToReach(qreal distance)
+{
+    if (std::abs(acceleration_) < 0.1) return distance / speed_;
+
+    qreal accelDistance = (cruiseSpeed_ * cruiseSpeed_ - speed_ * speed_) / (2 * comfAcceleration_); // from stop at a=1.8 and v_cruise=13.8 => 52.9m
+
+    if (accelDistance > distance)
+    {
+        // solve for t: d = v0t + 1/2at^2 => t = (-v + sqrt(v^2 + 2ad)) / a
+        return (-speed_ + std::sqrt(speed_ * speed_ + 2 * comfAcceleration_ * distance)) / comfAcceleration_;
+    }
+    else
+    {
+        qreal accelTime = (cruiseSpeed_ - speed_) / comfAcceleration_;
+        qreal cruiseDistance = distance - accelDistance;
+        qreal cruiseTime = cruiseDistance / cruiseSpeed_;
+        return accelTime + cruiseTime;
+    }
 }

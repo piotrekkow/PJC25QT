@@ -76,15 +76,23 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
         vehicle.h vehicle.cpp
         conflictpoint.h conflictpoint.cpp
         conflictgeometrycalculator.h conflictgeometrycalculator.cpp
-        intersectioncontroltype.h
         conflictmanager.h conflictmanager.cpp
-        iintersectioncontroller.h iintersectioncontroller.cpp
-        trafficmanager.h trafficmanager.cpp
+
+        traffic.h traffic.cpp
         itraversable.h itraversable.cpp
         PriorityType.h
-        IntersectionDecisionData.h
+        ConflictData.h
         DebugHelpers.h
         vehiclepid.h vehiclepid.cpp
+        agent.h agent.cpp
+        pidcontroller.h pidcontroller.cpp
+        intersectionrouter.h intersectionrouter.cpp
+        pedestrian.h pedestrian.cpp
+        generator.h generator.cpp
+        navigationstrategy.h navigationstrategy.cpp
+        intersectioncontroller.h intersectioncontroller.cpp
+
+
 
 
 

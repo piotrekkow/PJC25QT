@@ -1,10 +1,11 @@
 #include "renderer.h"
 #include "roadnetwork.h"
-#include "trafficmanager.h"
+#include "traffic.h"
+#include "intersection.h"
 #include <QGraphicsEllipseItem>
 #include <QGraphicsLineItem>
 
-Renderer::Renderer(QGraphicsScene *scene, const RoadNetwork *network, const TrafficManager *traffic)
+Renderer::Renderer(QGraphicsScene *scene, const RoadNetwork *network, const Traffic *traffic)
     : scene_{ scene }
     , network_{ network }
     , traffic_{ traffic }
@@ -66,17 +67,17 @@ void Renderer::draw() const
         }
     }
 
-    for (const auto& vehicle : traffic_->vehicles())
+    for (const auto& agent : traffic_->agents())
     {
         QGraphicsRectItem* vehicleRect = new QGraphicsRectItem(
-            -vehicle->length() / 2, -vehicle->width() / 2,
-            vehicle->length(), vehicle->width()
+            -agent->length() / 2, -agent->width() / 2,
+            agent->length(), agent->width()
             );
         vehicleRect->setPen(Qt::NoPen);
-        vehicleRect->setBrush(QBrush(vehicle->color()));
-        vehicleRect->setPos(vehicle->position());
+        vehicleRect->setBrush(QBrush(Qt::cyan));
+        vehicleRect->setPos(agent->position());
         // The angle from QPainterPath is counter-clockwise, so we negate it.
-        vehicleRect->setRotation(-vehicle->angle());
+        vehicleRect->setRotation(-agent->angle());
         scene_->addItem(vehicleRect);
     }
 }

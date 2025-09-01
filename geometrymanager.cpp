@@ -75,7 +75,7 @@ void GeometryManager::invalidate(const Road* road)
             laneGeometryCache_.erase(lane.get());
 
             // Iterate through all connections from that lane
-            for (const auto& connection : lane->connections())
+            for (const auto& connection : lane->nextConnections())
             {
                 // Erase the connection geometry from the cache
                 connectionGeometryCache_.erase(connection);

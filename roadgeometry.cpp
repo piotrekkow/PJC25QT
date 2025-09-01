@@ -1,6 +1,7 @@
 #include "roadgeometry.h"
 #include "road.h"
 #include "geometrymanager.h"
+#include "intersection.h"
 #include <stdexcept>
 
 /**

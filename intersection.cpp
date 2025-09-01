@@ -5,7 +5,6 @@ Intersection::Intersection(QPointF position, GeometryManager* geometry)
     : position_{ position }
 {
     conflictManager_ = std::make_unique<ConflictManager>(this, geometry);
-    controller_ = std::make_unique<UncontrolledIntersection>(this, geometry);
 }
 
 void Intersection::addRoad(Road *road)
@@ -15,7 +14,6 @@ void Intersection::addRoad(Road *road)
 
 Connection* Intersection::createConnection(Lane *source, Lane *destination)
 {
-    // The validation logic that was in Lane::addConnection now belongs here.
     if (!source || !destination)
         throw std::invalid_argument("Cannot create a connection with null lanes.");
 
@@ -25,38 +23,11 @@ Connection* Intersection::createConnection(Lane *source, Lane *destination)
     if (this != destination->roadway()->source())
         throw std::invalid_argument("Destination lane does not originate from this intersection.");
 
-    // Create and take ownership of the new connection
     auto newConnection = std::make_unique<Connection>(source, destination);
-
-    // Get the raw pointer to return
     Connection* connectionPtr = newConnection.get();
 
-    // Add the connection to the lane for easy access during simulation
-    source->addOutgoingConnection(connectionPtr);
-
-    // Store the unique_ptr in this intersection's list
+    source->addConnection(connectionPtr);
     connections_.emplace_back(std::move(newConnection));
 
     return connectionPtr;
-}
-
-bool Intersection::reachedPriorityRoadwayLimit()
-{
-    int priorityRoadways{ 0 };
-    for (const auto& road : roads_)
-    {
-        Roadway* approachingRoadway = nullptr;
-        if (road->forwardRoadway() && road->forwardRoadway()->destination() == this) {
-            approachingRoadway = road->forwardRoadway();
-        } else if (road->backwardRoadway() && road->backwardRoadway()->destination() == this) {
-            approachingRoadway = road->backwardRoadway();
-        }
-
-        if (approachingRoadway && approachingRoadway->priority() == PriorityType::Priority)
-        {
-            priorityRoadways++;
-        }
-    }
-    // Return true if the limit of 2 priority roadways has been met or exceeded.
-    return priorityRoadways >= 2;
 }

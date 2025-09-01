@@ -2,38 +2,39 @@
 
 #include "lane.h"
 #include <memory>
-#include <ranges>
-#include <QPointF>
+// #include <ranges>
 
 class Intersection;
 class Road;
 
 class Roadway
 {
-public:
-    enum class RoadwayDirection {
-        FORWARD,
-        BACKWARD
-    };
-
 private:
-    Intersection* sourceIntersection_;
-    Intersection* destinationIntersection_;
+    const Intersection* sourceIntersection_;
+    const Intersection* destinationIntersection_;
     std::vector<std::unique_ptr<Lane>> lanes_;  // unique_ptr because of possible vector reallocations making a raw pointer invalid
-    RoadwayDirection direction_;
-    Road* road_;
+    const Road* road_;
     PriorityType priority_;
+    qreal speedLimit_;
 
 public: 
-    Roadway(Road* parent, Intersection *source, Intersection *destination, RoadwayDirection direction, PriorityType priority);
-    Intersection* source() const { return sourceIntersection_; }
-    Intersection* destination() const { return destinationIntersection_; }
+    Roadway(const Road* parent, const Intersection *source, const Intersection *destination, PriorityType priority);
+    const Intersection* source() const { return sourceIntersection_; }
+    const Intersection* destination() const { return destinationIntersection_; }
     PriorityType priority() const { return priority_; }
     void priority(PriorityType priority);
+    bool isForwardRoadway() const;
 
-    Lane* addLane();
-    auto lanesView() const { return lanes_ | std::views::transform([](auto const& up) { return up.get(); }); }
+    qreal speedLimit() const { return speedLimit_; }
+    void speedLimit(qreal value) { speedLimit_ = value; }
+
+    const Lane* addLane();
+    // auto lanesView() const { return lanes_ | std::views::transform([](auto const& up) { return up.get(); }); }
     const std::vector<std::unique_ptr<Lane>>& lanes() const { return lanes_; }
-    bool isForwardRoadway() const { return direction_ == RoadwayDirection::FORWARD; }
+
     const Road* road() const { return road_; }
+
+
+private:
+    bool canHavePriority();
 };

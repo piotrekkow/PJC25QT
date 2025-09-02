@@ -13,6 +13,7 @@ Simulation::Simulation(QGraphicsScene *scene)
 
 void Simulation::initialize()
 {
+
     auto is1 = traffic_->createIntersection({0, 0});
     auto is2 = traffic_->createIntersection({0, 180});
     auto is3 = traffic_->createIntersection({190,-50});
@@ -60,6 +61,7 @@ void Simulation::initialize()
     // traffic_->addGenerator<is2>();
     // traffic_->addGenerator<is3>();
     // traffic_->addGenerator<is5>();
+
 
     auto is1Router = traffic_->router(is1);
 

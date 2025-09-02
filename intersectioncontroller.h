@@ -19,7 +19,7 @@ protected:
 public:
     explicit IntersectionController(const Intersection* intersection) : intersection_{ intersection } {}
     virtual ~IntersectionController() = default;
-    virtual void update(qreal deltaTime, const std::vector<std::unique_ptr<Agent>>& agents);
+    // virtual void update(qreal deltaTime, const std::vector<std::unique_ptr<Agent>>& agents);
 
     // virtual bool canProceed(const Connection* conn, const Vehicle* vehicle, const std::vector<std::unique_ptr<Agent>>& agents) const = 0;
     // virtual bool canProceed(const PedestrianCrossing* crossing, const Pedestrian* pedestrian) const = 0;

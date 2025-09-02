@@ -40,7 +40,10 @@ void IntersectionRouter::validate() const
     // checks whether all incoming roadways have a set of flows (flows themselves might be incomplete eg. not include every roadway at an intersection)
     for (const auto& road : intersection_->roads())
     {
-        if (!routeFlows_.contains(road->roadway(intersection_)))
-            throw std::runtime_error("Tried to simulate an intersection without a route distribution for every incoming roadway.");
+        if (intersection_->roads().size() <= 1) continue; // this is a dead end, no routing needed as it's the end of the route and vehicle will be marked for deletion.
+
+        if (auto incomingRoadway = road->roadway(intersection_))
+            if (!routeFlows_.contains(incomingRoadway))
+                throw std::runtime_error("Tried to simulate an intersection without a route distribution for every incoming roadway.");
     }
 }

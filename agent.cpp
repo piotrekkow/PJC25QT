@@ -24,6 +24,7 @@ void Agent::update(qreal deltaTime)
 
 void Agent::updatePositionAndAngle()
 {
+    if (!traversable_) return;
     const QPainterPath* currentPath = &traversable_->path(geometry_);
     if (speed_ == 0 || !currentPath || currentPath->isEmpty()) return;
 
@@ -58,5 +59,6 @@ void Agent::navigate()
         }
     }
 
-    navigationStrategy_->update();
+    if (navigationStrategy_)
+        navigationStrategy_->update();
 }

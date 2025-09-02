@@ -39,7 +39,9 @@ bool Roadway::canHavePriority()
     int priorityRoadwayLimit = 2;
     for (const auto& candidate : destinationIntersection_->roads())
     {
-        if (candidate->roadway(destinationIntersection_)->priority() == PriorityType::Priority)
+        const Roadway* incomingRoadway = candidate->roadway(destinationIntersection_);
+
+        if (incomingRoadway && incomingRoadway->priority() == PriorityType::Priority)
             priorityRoadwayLimit--;
     }
 

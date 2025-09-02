@@ -1,5 +1,6 @@
 #include "pidcontroller.h"
 #include <algorithm> // clamp
+#include <QDebug>
 
 PIDController::PIDController(qreal kp, qreal ki, qreal kd)
     : kp_{ kp }
@@ -20,7 +21,6 @@ qreal PIDController::update(qreal setpoint, qreal currentValue, qreal deltaTime)
                                  : 0.0;
 
     previousError_ = error;
-
     return kp_ * error + ki_ * integral_ + derivative;
 }
 

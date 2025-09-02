@@ -5,6 +5,7 @@
 #include "ConflictData.h"
 #include "vehicle.h"
 #include "road.h"
+#include <qdebug.h>
 
 void NavigationStrategy::update()
 {
@@ -20,6 +21,7 @@ LaneNavigationStrategy::LaneNavigationStrategy(Vehicle *vehicle, const Traffic *
     : NavigationStrategy(vehicle, traffic, geometry), lane_{ lane }
 {
     designatedNextRoadway_ = traffic_->router(lane_->intersection())->route(lane_->roadway());
+    qDebug() << "dnr: " << designatedNextRoadway_;
 }
 
 const Traversable *LaneNavigationStrategy::next() const

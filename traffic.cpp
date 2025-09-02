@@ -22,6 +22,11 @@ void Traffic::update(qreal deltaTime)
     {
         removeAgent(agent);
     }
+
+    for (const auto& generator : generators_)
+    {
+        generator.second->update(deltaTime, this, network_->geometry());
+    }
 }
 
 void Traffic::removeAgent(Agent *agent)
@@ -38,6 +43,7 @@ Intersection *Traffic::createIntersection(QPointF position)
     Intersection* intersection = network_->createIntersectionTopology(position);
     controllers_.emplace(std::make_pair(intersection, std::make_unique<SignController>(intersection)));
     routers_.emplace(std::make_pair(intersection, std::make_unique<IntersectionRouter>(intersection)));
+    generators_.emplace(std::make_pair(intersection, std::make_unique<FlowGenerator>(intersection)));
     return intersection;
 }
 
@@ -59,3 +65,14 @@ IntersectionRouter *Traffic::router(const Intersection *intersection)
     return (it != routers_.end()) ? it->second.get() : nullptr;
 }
 
+const FlowGenerator *Traffic::generator(const Intersection *intersection) const
+{
+    auto it = generators_.find(intersection);
+    return (it != generators_.end()) ? it->second.get() : nullptr;
+}
+
+FlowGenerator *Traffic::generator(const Intersection *intersection)
+{
+    auto it = generators_.find(intersection);
+    return (it != generators_.end()) ? it->second.get() : nullptr;
+}

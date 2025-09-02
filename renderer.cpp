@@ -5,6 +5,8 @@
 #include <QGraphicsEllipseItem>
 #include <QGraphicsLineItem>
 
+#include "vehicle.h"
+
 Renderer::Renderer(QGraphicsScene *scene, const RoadNetwork *network, const Traffic *traffic)
     : scene_{ scene }
     , network_{ network }
@@ -52,6 +54,14 @@ void Renderer::draw() const
             textItem->setDefaultTextColor(Qt::red); // Set a visible color
         }
 
+        int genCount = traffic_->generator(intersection.get())->generatedCount();
+        QString generatedVehiclesCount = QString::asprintf("gen: %i", genCount);
+        QFont font;
+        font.setPointSize(4);
+        QGraphicsTextItem* textItem = scene_->addText(generatedVehiclesCount);
+        textItem->setFont(font);
+        textItem->setPos(intersection->position() - QPointF{0.0, 0.0}); // Position the text at the same point
+        textItem->setDefaultTextColor(Qt::green); // Set a visible color
     }
 
     // Draw roads
@@ -79,6 +89,18 @@ void Renderer::draw() const
         // The angle from QPainterPath is counter-clockwise, so we negate it.
         vehicleRect->setRotation(-agent->angle());
         scene_->addItem(vehicleRect);
+
+        if (debug)
+        {
+            QString agentDebugParams = QString::asprintf("%p: a = %.3f, v = %.3f, vc = %.3f", (void *) agent.get(), agent->speed(), dynamic_cast<const Vehicle*>(agent.get())->acceleration(), dynamic_cast<const VehicleTraversable*>(agent->traversable())->speedLimit());
+            QFont font;
+            font.setPointSize(2);
+            QGraphicsTextItem* textItem = scene_->addText(agentDebugParams);
+            textItem->setFont(font);
+
+            textItem->setPos(agent->position() - QPointF{4.0, 4.0});
+            textItem->setDefaultTextColor(Qt::yellow);
+        }
     }
 }
 
@@ -114,20 +136,13 @@ void Renderer::drawCircle(QPointF position, qreal diameter, QPen pen) const
 
 QLineF Renderer::offsetLine(const QLineF& line, qreal offset) const
 {
-    // Step 1: get the direction vector of the line
     QPointF direction = line.p2() - line.p1();
-
-    // Step 2: compute the normal vector (rotate 90 degrees counter-clockwise)
     QPointF normal(-direction.y(), direction.x());
-
-    // Step 3: normalize the normal vector
     qreal length = std::hypot(normal.x(), normal.y());
-    if (length == 0) return line; // avoid division by zero
-    QPointF unitNormal = normal / length;
 
-    // Step 4: scale by offset
+    if (length == 0) return line;
+    QPointF unitNormal = normal / length;
     QPointF offsetVector = unitNormal * offset;
 
-    // Step 5: move both endpoints
     return QLineF(line.p1() + offsetVector, line.p2() + offsetVector);
 }

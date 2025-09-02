@@ -88,7 +88,7 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
         pidcontroller.h pidcontroller.cpp
         intersectionrouter.h intersectionrouter.cpp
         pedestrian.h pedestrian.cpp
-        generator.h generator.cpp
+        flowgenerator.h flowgenerator.cpp
         navigationstrategy.h navigationstrategy.cpp
         intersectioncontroller.h intersectioncontroller.cpp
 

@@ -23,7 +23,7 @@
 #include "agent.h"
 #include "intersectioncontroller.h"
 #include "intersectionrouter.h"
-// #include "generator.h"
+#include "flowgenerator.h"
 #include <memory>
 #include <unordered_map>
 
@@ -36,6 +36,7 @@ class Traffic
     // std::vector<std::unique_ptr<Router>> routers_;
     std::unordered_map<const Intersection*, std::unique_ptr<IntersectionController>> controllers_;
     std::unordered_map<const Intersection*, std::unique_ptr<IntersectionRouter>> routers_;
+    std::unordered_map<const Intersection*, std::unique_ptr<FlowGenerator>> generators_;
 
     RoadNetwork* network_;    // TODO: Make const, allow only changes only in an edit mode. Currently not const to allow construction of controllers and routers for intersections
 
@@ -58,6 +59,9 @@ public:
     const IntersectionController* controller(const Intersection* intersection) const;
     const IntersectionRouter* router(const Intersection* intersection) const;
     IntersectionRouter* router(const Intersection* intersection);
+    const FlowGenerator *generator(const Intersection *intersection) const;
+    FlowGenerator* generator(const Intersection* intersection);
+
     // template<typename GeneratorType, typename... Args>
     // void addGenerator(Args&&... args);
 };

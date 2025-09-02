@@ -31,7 +31,6 @@ class Vehicle : public Agent
     PIDController cruiseController_;
 
     std::queue<const Intersection*> routeQueue_;
-    std::unique_ptr<NavigationStrategy> navigationStrategy_;
 
 public:
     static std::unique_ptr<Vehicle> create(Lane* initialLane, const Traffic* traffic, const GeometryManager *geometry);
@@ -41,11 +40,13 @@ public:
     qreal decisionDistance() const;
     Connection* likelyNextConnection() const;   // priv?
     qreal timeToReach(qreal distance);
+    qreal acceleration() const { return acceleration_; } // ONLY FOR DEBUG
 
 protected:
     Vehicle(Lane* initialLane, const Traffic* traffic, const GeometryManager* geometry);
 
     void applyPhysics(qreal deltaTime) override;
+    void updateDynamics(qreal deltaTime) override;
     std::unique_ptr<NavigationStrategy> createNavigationStrategyFor(const Traversable* newTraversable) override;
 
 private:

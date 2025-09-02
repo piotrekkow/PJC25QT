@@ -1,6 +1,14 @@
 #include "intersectionrouter.h"
 #include "road.h"
 #include "intersection.h"
+#include <chrono>
+
+
+
+IntersectionRouter::IntersectionRouter(const Intersection *intersection)
+    : rng_(std::chrono::high_resolution_clock::now().time_since_epoch().count())
+    , intersection_{ intersection }
+{}
 
 void IntersectionRouter::addRoadwayFlows(const Roadway *from, std::vector<RoadwayFlow> flowsTo)
 {
@@ -33,6 +41,13 @@ const Roadway *IntersectionRouter::route(const Roadway *from) const
 
     int idx = dist(rng_);
     return flows[idx].roadway;
+}
+
+const std::vector<RoadwayFlow> IntersectionRouter::roadwayFlows(const Roadway *from) const
+{
+    auto it = routeFlows_.find(from);
+    if (it != routeFlows_.end()) return it->second;
+    else return {};
 }
 
 void IntersectionRouter::validate() const

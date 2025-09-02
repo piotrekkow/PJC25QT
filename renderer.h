@@ -10,6 +10,7 @@ class Renderer
     QGraphicsScene* scene_;
     const RoadNetwork* network_;
     const Traffic* traffic_;
+    bool debug{ true };
 
 public:
     Renderer(QGraphicsScene* scene, const RoadNetwork* network, const Traffic *traffic);

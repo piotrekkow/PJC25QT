@@ -19,10 +19,10 @@ class IntersectionRouter
     const Intersection* intersection_;
 
 public:
-    IntersectionRouter(const Intersection* intersection)
-        : rng_(std::random_device{}()), intersection_{ intersection } {}
+    IntersectionRouter(const Intersection* intersection);
 
     void addRoadwayFlows(const Roadway* from, std::vector<RoadwayFlow> flowsTo);
     const Roadway* route(const Roadway* from) const;
+    const std::vector<RoadwayFlow> roadwayFlows(const Roadway* from) const;
     void validate() const;
 };

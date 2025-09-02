@@ -3,6 +3,7 @@
 #include "renderer.h"
 #include "roadnetwork.h"
 #include "traffic.h"
+#include <qdebug.h>
 
 class Simulation
 {

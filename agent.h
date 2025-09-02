@@ -8,11 +8,13 @@ class GeometryManager;
 
 class Agent
 {
-    std::unique_ptr<NavigationStrategy> navigationStrategy_;
+
     bool markedForRemoval_;
 
 protected:
     const Traversable* traversable_;
+    std::unique_ptr<NavigationStrategy> navigationStrategy_;
+
     qreal progress_;    // progress along traversable
     qreal speed_;
     QPointF position_;
@@ -44,6 +46,7 @@ public:
 protected:
     virtual void updatePositionAndAngle();
     virtual void applyPhysics(qreal deltaTime);
+    virtual void updateDynamics(qreal deltaTime) = 0;
 
     virtual std::unique_ptr<NavigationStrategy> createNavigationStrategyFor(const Traversable* newTraversable) = 0;
 

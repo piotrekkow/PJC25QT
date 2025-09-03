@@ -31,6 +31,14 @@ void Traffic::update(qreal deltaTime)
 
 void Traffic::removeAgent(Agent *agent)
 {
+    signalAgentRemoved(agent);
+
+    if (const VehicleTraversable* traversable = dynamic_cast<const VehicleTraversable*>(agent->traversable()))
+    {
+        if (const Intersection* intersection = traversable->intersection())
+            removedVehicleCounts_[intersection]++;
+    }
+
     agents_.erase(std::remove_if(agents_.begin(), agents_.end(),
                                  [agent](const std::unique_ptr<Agent>& a)
                                  {
@@ -44,6 +52,7 @@ Intersection *Traffic::createIntersection(QPointF position)
     controllers_.emplace(std::make_pair(intersection, std::make_unique<SignController>(intersection)));
     routers_.emplace(std::make_pair(intersection, std::make_unique<IntersectionRouter>(intersection)));
     generators_.emplace(std::make_pair(intersection, std::make_unique<FlowGenerator>(intersection)));
+    removedVehicleCounts_.emplace(std::make_pair(intersection, 0));
     return intersection;
 }
 
@@ -75,4 +84,24 @@ FlowGenerator *Traffic::generator(const Intersection *intersection)
 {
     auto it = generators_.find(intersection);
     return (it != generators_.end()) ? it->second.get() : nullptr;
+}
+
+int Traffic::getRemovedVehicleCount(const Intersection *intersection) const
+{
+    auto it = removedVehicleCounts_.find(intersection);
+    if (it != removedVehicleCounts_.end())
+        return it->second;
+    return 0;
+}
+
+void Traffic::signalAgentAdded(const Agent* agent) {
+    for (auto* observer : observers_) {
+        observer->onAgentAdded(agent);
+    }
+}
+
+void Traffic::signalAgentRemoved(const Agent* agent) {
+    for (auto* observer : observers_) {
+        observer->onAgentRemoved(agent);
+    }
 }

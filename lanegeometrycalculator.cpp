@@ -50,7 +50,7 @@ QPointF LaneGeometryCalculator::calculatePointForLane(const std::vector<Oriented
 
 qreal LaneGeometryCalculator::calculateCumulativeOffset(const Lane* lane, const Roadway* roadway)
 {
-    qreal offset = 0.0f;
+    qreal offset = 0.0;
     const size_t laneIndex = RoadwayUtils::getLaneIndex(lane, roadway);
     const auto& allLanes = roadway->lanes();
 
@@ -58,6 +58,6 @@ qreal LaneGeometryCalculator::calculateCumulativeOffset(const Lane* lane, const 
     {
         offset += allLanes[i]->width();
     }
-    offset += lane->width() / 2.0f;
+    offset += lane->width() / 2.0;
     return offset;
 }

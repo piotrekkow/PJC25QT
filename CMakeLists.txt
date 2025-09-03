@@ -79,11 +79,11 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
         conflictmanager.h conflictmanager.cpp
 
         traffic.h traffic.cpp
-        itraversable.h itraversable.cpp
+        traversable.h traversable.cpp
         PriorityType.h
         ConflictData.h
         DebugHelpers.h
-        vehiclepid.h vehiclepid.cpp
+
         agent.h agent.cpp
         pidcontroller.h pidcontroller.cpp
         intersectionrouter.h intersectionrouter.cpp
@@ -91,6 +91,9 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
         flowgenerator.h flowgenerator.cpp
         navigationstrategy.h navigationstrategy.cpp
         intersectioncontroller.h intersectioncontroller.cpp
+        alignedtextitem.h alignedtextitem.cpp
+        agentpainter.h agentpainter.cpp
+        trafficobserver.h
 
 
 

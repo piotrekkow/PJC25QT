@@ -13,7 +13,7 @@ class RoadGeometry
     GeometryManager* geometryManager_;
 
 public:
-    RoadGeometry(const Road* road, GeometryManager* geometryManager, qreal startOffset = 15.0f, qreal endOffset = 15.0f);
+    RoadGeometry(const Road* road, GeometryManager* geometryManager, qreal startOffset = 15.0, qreal endOffset = 15.0);
     void addPoint(QPointF position, size_t index);
 
     RoadGeometryPoint& pointAt(size_t index) { return points_.at(index); }

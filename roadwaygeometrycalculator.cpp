@@ -55,7 +55,7 @@ OrientedPoint RoadwayGeometryCalculator::calculateBaselinePoint(const RoadGeomet
 
     // The direction of the offset depends on whether it's a forward or backward roadway.
     const QPointF smoothNormal = roadway->isForwardRoadway() ? normal(prevPos, nextPos) : normal(nextPos, prevPos);
-    const qreal offsetMagnitude = currentPoint.medianWidth() / 2.0f + currentPoint.medianOffset();
+    const qreal offsetMagnitude = currentPoint.medianWidth() / 2.0 + currentPoint.medianOffset();
     const QPointF offsetVector = smoothNormal * offsetMagnitude;
 
     return {

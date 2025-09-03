@@ -1,29 +1,10 @@
 #pragma once
-// #include <qtypes.h>
-// #include "vehicle.h"
-
-// class RoadNetwork;
-// class Lane;
-
-// class Traffic
-// {
-//     std::vector<std::unique_ptr<Vehicle>> vehicles_;
-//     const RoadNetwork* network_;
-
-// public:
-//     Traffic(const RoadNetwork* network);
-
-//     void update(qreal deltaTime);
-
-//     Vehicle* createVehicle(Lane* initialLane, qreal initialPosition = 0.0);
-//     const std::vector<std::unique_ptr<Vehicle>>& vehicles() const { return vehicles_; }
-//     void removeVehicle(Vehicle* vehicle);
-// };
 
 #include "agent.h"
 #include "intersectioncontroller.h"
 #include "intersectionrouter.h"
 #include "flowgenerator.h"
+#include "trafficobserver.h"
 #include <memory>
 #include <unordered_map>
 
@@ -32,24 +13,33 @@ class RoadNetwork;
 class Traffic
 {
     std::vector<std::unique_ptr<Agent>> agents_;
-    // std::vector<std::unique_ptr<Generator>> generators_;
-    // std::vector<std::unique_ptr<Router>> routers_;
     std::unordered_map<const Intersection*, std::unique_ptr<IntersectionController>> controllers_;
     std::unordered_map<const Intersection*, std::unique_ptr<IntersectionRouter>> routers_;
     std::unordered_map<const Intersection*, std::unique_ptr<FlowGenerator>> generators_;
+    std::unordered_map<const Intersection*, int> removedVehicleCounts_;
 
-    RoadNetwork* network_;    // TODO: Make const, allow only changes only in an edit mode. Currently not const to allow construction of controllers and routers for intersections
+    std::vector<TrafficObserver*> observers_;
+
+    // TODO: Make const, allow changes only in an `edit mode`. Currently not const to allow construction of controllers and routers for intersections
+    RoadNetwork* network_;
 
 public:
-    /*explicit*/ Traffic(RoadNetwork* network);
+    Traffic(RoadNetwork* network);
 
     void update(qreal deltaTime);
+
+    void addObserver(TrafficObserver* observer) { observers_.push_back(observer); }
+    void removeObserver(TrafficObserver* observer) {observers_.erase(std::remove(observers_.begin(), observers_.end(), observer), observers_.end()); }
 
     template<typename AgentType, typename... Args>
     AgentType* createAgent(Args&&... args)
     {
         agents_.push_back(AgentType::create(std::forward<Args>(args)...));
-        return static_cast<AgentType*>(agents_.back().get());
+        AgentType* newAgent = static_cast<AgentType*>(agents_.back().get());
+
+        signalAgentAdded(newAgent);
+
+        return newAgent;
     }
 
     const std::vector<std::unique_ptr<Agent>>& agents() const { return agents_; }
@@ -61,7 +51,12 @@ public:
     IntersectionRouter* router(const Intersection* intersection);
     const FlowGenerator *generator(const Intersection *intersection) const;
     FlowGenerator* generator(const Intersection* intersection);
+    int getRemovedVehicleCount(const Intersection* intersection) const;
 
     // template<typename GeneratorType, typename... Args>
     // void addGenerator(Args&&... args);
+
+private:
+    void signalAgentAdded(const Agent* agent);
+    void signalAgentRemoved(const Agent* agent);
 };

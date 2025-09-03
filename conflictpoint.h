@@ -15,7 +15,6 @@ public:
     };
 
 private:
-    // --- RENAMED MEMBERS ---
     const Connection* priorityConnection_; // The connection that has the right-of-way
     const Connection* yieldConnection_;    // The connection that must yield
 
@@ -36,7 +35,6 @@ public:
         , distanceFromYield_(distanceFromYield)
     {}
 
-    // --- UPDATED ACCESSORS ---
     const Connection* priorityConnection() const { return priorityConnection_; }
     const Connection* yieldConnection() const { return yieldConnection_; }
     QPointF position() const { return position_; }

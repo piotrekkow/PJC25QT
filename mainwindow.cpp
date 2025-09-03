@@ -17,7 +17,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->graphicsView->setScene(scene_);
 
     // large canvas (cad-like) to enable free panning
-    qreal huge_dimension = 100000;
+    qreal huge_dimension = 100000.0;
     scene_->setSceneRect(-huge_dimension, -huge_dimension, huge_dimension * 2, huge_dimension * 2);
 
     view_->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);

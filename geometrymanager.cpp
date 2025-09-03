@@ -1,15 +1,12 @@
 #include "geometrymanager.h"
-
-// You'll need to include the full definitions of your topology classes here
 #include "roadnetwork.h"
 #include "road.h"
 #include "roadway.h"
 #include "lane.h"
 #include "connection.h"
-
-// And your stateless calculators
 #include "lanegeometrycalculator.h"
 #include <qmath.h>
+#include <stdexcept>
 
 GeometryManager::GeometryManager(RoadNetwork* network)
     : network_{ network }
@@ -139,15 +136,6 @@ const QPainterPath& GeometryManager::calculateAndCacheLaneGeometry(const Lane* l
     return laneGeometryCache_.emplace(lane, std::move(laneGeom)).first->second;
 }
 
-#include <cmath> // For std::hypot
-
-// ... inside the GeometryManager class
-
-#include <cmath>     // For std::hypot
-#include <stdexcept> // For std::logic_error
-
-// ... inside the GeometryManager class
-
 const QPainterPath& GeometryManager::calculateAndCacheConnectionGeometry(const Connection* connection) const
 {
     const QPainterPath& sourceLaneGeom = lane(connection->source());
@@ -176,7 +164,7 @@ const QPainterPath& GeometryManager::calculateAndCacheConnectionGeometry(const C
 
     // --- 3. Build the initial path structure ---
     QPainterPath finalPath(sourceLaneEnd);
-    if (connection->sourceOffset() != 0.0f) {
+    if (connection->sourceOffset() != 0.0) {
         finalPath.lineTo(curveStartPoint);
     }
 
@@ -238,7 +226,7 @@ const QPainterPath& GeometryManager::calculateAndCacheConnectionGeometry(const C
     }
 
     // --- 6. Finalize Path ---
-    if (connection->destinationOffset() != 0.0f) {
+    if (connection->destinationOffset() != 0.0) {
         finalPath.lineTo(destLaneStart);
     }
 

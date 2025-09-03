@@ -29,14 +29,5 @@ private:
     void establishFlowSource();
 };
 
-// class Roadway;
-
-// class VehicleGenerator : public Generator
-// {
-//     const Roadway* roadway_;
-
-// public:
-//     VehicleGenerator(qreal rate);
-
-//     void update(qreal deltaTime);
-// };
+// class VehicleFlowGenerator : public FlowGenerator
+// class PedestrianFlowGenerator : public FlowGenerator

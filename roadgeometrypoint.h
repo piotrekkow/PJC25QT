@@ -7,7 +7,7 @@ class RoadGeometryPoint
     qreal medianWidth_;
     qreal medianOffset_;
 public:
-    RoadGeometryPoint(QPointF position, qreal medianWidth = 0.0f, qreal medianOffset = 0.0f);
+    RoadGeometryPoint(QPointF position, qreal medianWidth = 0.0, qreal medianOffset = 0.0);
 
     QPointF position() const { return position_; }
     qreal medianWidth() const { return medianWidth_; }

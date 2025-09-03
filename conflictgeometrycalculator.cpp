@@ -123,7 +123,6 @@ std::vector<std::unique_ptr<ConflictGeometryCalculator::Segment> > ConflictGeome
             //   CurveToDataElement = second control point (for cubic) OR end point (for quad)
             //   CurveToDataElement = end point (for cubic)
 
-            // sanity: make sure we have enough elements
             if (i + 1 >= path.elementCount())
                 break;
 
@@ -189,7 +188,7 @@ QPointF ConflictGeometryCalculator::QuadraticSegment::evaluateAt(qreal t) const
 
 qreal ConflictGeometryCalculator::QuadraticSegment::length() const
 {
-    const int N = 50; // resolution
+    const int N = 50;
     QPointF prev = p0;
     qreal len = 0.0;
     for (int i = 1; i <= N; ++i) {
@@ -203,7 +202,7 @@ qreal ConflictGeometryCalculator::QuadraticSegment::length() const
 
 qreal ConflictGeometryCalculator::QuadraticSegment::distanceToPoint(const QPointF &p) const
 {
-    const int N = 50; // finer sampling for distance
+    const int N = 50;
     QPointF prev = p0;
     qreal lenSoFar = 0.0;
     qreal bestDist = std::numeric_limits<qreal>::max();
@@ -237,7 +236,7 @@ QPointF ConflictGeometryCalculator::CubicSegment::evaluateAt(qreal t) const
 
 qreal ConflictGeometryCalculator::CubicSegment::length() const
 {
-    const int N = 50; // cubic can bend more, sample denser
+    const int N = 50;
     QPointF prev = p0;
     qreal len = 0.0;
     for (int i = 1; i <= N; ++i) {
@@ -251,7 +250,7 @@ qreal ConflictGeometryCalculator::CubicSegment::length() const
 
 qreal ConflictGeometryCalculator::CubicSegment::distanceToPoint(const QPointF &p) const
 {
-    const int N = 50; // denser sampling for accuracy
+    const int N = 50;
     QPointF prev = p0;
     qreal lenSoFar = 0.0;
     qreal bestDist = std::numeric_limits<qreal>::max();

@@ -41,6 +41,7 @@ public:
     Connection* likelyNextConnection() const;   // priv?
     qreal timeToReach(qreal distance);
     qreal acceleration() const { return acceleration_; } // ONLY FOR DEBUG
+    qreal cruiseSpeed() const { return cruiseSpeed_; } // ONLY FOR DEBUG
 
 protected:
     Vehicle(Lane* initialLane, const Traffic* traffic, const GeometryManager* geometry);

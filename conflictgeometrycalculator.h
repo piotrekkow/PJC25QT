@@ -85,7 +85,7 @@ private:
         std::vector<QPointF> intersectWith(const CubicSegment& other, qreal tol) const override;
     };
 
-    // ===== Helpers =====
+    // Helpers
     static std::vector<std::unique_ptr<Segment>> extractSegments(const QPainterPath& path);
     static std::vector<QPointF> flattenSegment(const Segment& segment, int steps = 50);
     static std::vector<QPointF> intersectPolylines(const std::vector<QPointF>& poly1, const std::vector<QPointF>& poly2, qreal tol);

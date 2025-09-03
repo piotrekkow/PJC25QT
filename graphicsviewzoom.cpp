@@ -6,8 +6,8 @@
 GraphicsViewZoom::GraphicsViewZoom(QGraphicsView* view)
     : QObject{ view }
     , view_{ view }
-    , baseZoomFactor_{ 1.004f }
-    , zoomLevel_{ 1.0f }
+    , baseZoomFactor_{ 1.004 }
+    , zoomLevel_{ 1.0 }
 {
     view_->viewport()->installEventFilter(this);
     // view_->setMouseTracking(true);

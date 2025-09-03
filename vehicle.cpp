@@ -7,7 +7,7 @@
 
 Vehicle::Vehicle(Lane *initialLane, const Traffic *traffic, const GeometryManager *geometry)
     : Agent(initialLane, traffic, geometry, 5.0, 2.0)
-    , acceleration_{ 0.0f }
+    , acceleration_{ 0.0 }
     , cruiseSpeed_{ initialLane->speedLimit() }
     , stoppingController_(1.0, 0.4, 0.02)
     , followingController_(0.6, 0.4)

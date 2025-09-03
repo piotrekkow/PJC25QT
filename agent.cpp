@@ -1,5 +1,5 @@
 #include "agent.h"
-#include "itraversable.h"
+#include "traversable.h"
 #include "geometrymanager.h"
 #include <QDebug>
 
@@ -63,7 +63,6 @@ void Agent::navigate()
         else
         {
             // End of route
-            traversable_ = nullptr;
             navigationStrategy_ = nullptr;
             markedForRemoval_ = true;
         }

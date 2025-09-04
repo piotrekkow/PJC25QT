@@ -47,20 +47,21 @@ void Renderer::updateDynamicLayer(const Traffic *traffic, const RoadNetwork *net
     {
         const Intersection* intersection = intersectionPtr.get();
         int genCount = traffic->generator(intersection)->generatedCount();
-        QString generatedVehiclesCount = QString("gen: %1").arg(genCount);
+        int backlog = traffic->generator(intersection)->backlog();
+        QString intersectionData = QString("gen: %1\nbacklog: %2").arg(genCount).arg(backlog);
 
         auto it = intersectionTextItems_.find(intersection);
         if (it != intersectionTextItems_.end())
         {
             // Text item exists, just update its content
-            it->second->setPlainText(generatedVehiclesCount);
+            it->second->setPlainText(intersectionData);
         }
         else
         {
             // Text item doesn't exist, create it once
             QFont font;
             font.setPointSize(4);
-            auto textItem = new QGraphicsTextItem(generatedVehiclesCount);
+            auto textItem = new QGraphicsTextItem(intersectionData);
             textItem->setFont(font);
             textItem->setPos(intersection->position());
             textItem->setDefaultTextColor(Qt::green);

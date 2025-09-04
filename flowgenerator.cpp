@@ -9,16 +9,29 @@ FlowGenerator::FlowGenerator(const Intersection *intersection)
     : flow_{ 0 }
     , rng_(std::chrono::high_resolution_clock::now().time_since_epoch().count())
     , intersection_{ intersection }
+    , lastGeneratedVehicle_{ nullptr }
     , generatedCount_{ 0 }
+    , backlog_{ 0 }
 {}
 
 void FlowGenerator::update(qreal deltaTime, Traffic* traffic, const GeometryManager* geometry)
 {
-    if (shouldTrigger(deltaTime) && flowSource_)
+    if (!flowSource_) return;
+
+    if (shouldTrigger(deltaTime))
     {
-        // TODO: logic to spread out vehicles if roadway has more lanes, integration with router so that vehicle more likely to appear at lane connecting to where it's being routed
-        traffic->createAgent<Vehicle>(flowSource_->lanes()[0].get(), traffic, geometry);
-        generatedCount_++;
+        backlog_++;
+    }
+
+    if (backlog_ > 0)
+    {
+        if (!lastGeneratedVehicle_ || (lastGeneratedVehicle_ && lastGeneratedVehicle_->progress() > 1.5 * lastGeneratedVehicle_->length()))
+        {
+            // TODO: logic to spread out vehicles if roadway has more lanes, integration with router so that vehicle more likely to appear at lane connecting to where it's being routed
+            lastGeneratedVehicle_ = traffic->createAgent<Vehicle>(flowSource_->lanes()[0].get(), traffic, geometry);
+            generatedCount_++;
+            backlog_--;
+        }
     }
 }
 

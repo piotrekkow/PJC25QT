@@ -34,7 +34,7 @@ std::vector<ConflictData> SignController::conflictsMustYieldTo(const Connection 
         if (!foundAgents.empty()) conflictsToResolve.emplace_back(ConflictData{cp, foundAgents});
     }
 
-    qDebug() << "decisionData:" << conflictsToResolve;
+    // qDebug() << "decisionData:" << conflictsToResolve;
     return conflictsToResolve;
 }
 

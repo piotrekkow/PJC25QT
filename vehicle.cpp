@@ -21,8 +21,8 @@ std::unique_ptr<Vehicle> Vehicle::create(Lane *initialLane, const Traffic *traff
 
 qreal Vehicle::decisionDistance() const
 {
-    // allows for a very comfortable margin for stopping at 1 m/s^2, reasonable substitute for infinity
-    return speed_ * speed_ / 3;
+    // allows for a very comfortable margin for stopping at 1/2 comfDeceleration_, reasonable substitute for infinity
+    return (speed_ * speed_ / comfDeceleration_) + 2 * minDistanceGap_;
 }
 
 void Vehicle::applyPhysics(qreal deltaTime)
@@ -42,12 +42,13 @@ void Vehicle::updateDynamics(qreal deltaTime)
     if (nextStopDistance_ > 0 && nextStopDistance_ < decisionDistance())
     {
         // Stop
-        qreal stopKp = 10 / (speed_ + 5);
-        controller_.gains(stopKp, 0.0, 0.2);
+        // qreal stopKp = 10 / (speed_ + 2);
 
-        qreal buffer = 1.5 * speed_;
-        qreal targetSpeed = std::sqrt(2.0 * (nextStopDistance_ - buffer) * comfDeceleration_);
-        setpoint = targetSpeed;
+        // change kd linearly with speed_
+        controller_.gains(1.0, 0.0, 0.0);
+        qreal safeSpeed = std::sqrt(2.0 * std::max(0.0, nextStopDistance_ - minDistanceGap_ -(speed_ * 0.5))  * comfDeceleration_);
+        setpoint = (speed_ < safeSpeed) ? safeSpeed
+                                        : 0.0;
         reqAccel = controller_.update(setpoint, speed_, deltaTime);
         debugAction_ = DebugAction::Stopping;
     }
@@ -61,11 +62,11 @@ void Vehicle::updateDynamics(qreal deltaTime)
     }
 
     qreal maxAccelChange = jerk_ * deltaTime;
+    qreal reqAccelChange = reqAccel - acceleration_;
 
-    acceleration_ += (reqAccel > acceleration_) ? std::min(maxAccelChange, reqAccel - acceleration_)
-                                                : std::max(-maxAccelChange, acceleration_ - reqAccel);
-
-    acceleration_ = std::clamp(reqAccel, -maxDeceleration_, maxAcceleration_);
+    reqAccelChange = std::clamp(reqAccelChange, -maxAccelChange, maxAccelChange);
+    acceleration_ += reqAccelChange;
+    acceleration_ = std::clamp(acceleration_, -maxDeceleration_, maxAcceleration_);
 }
 
 std::unique_ptr<NavigationStrategy> Vehicle::createNavigationStrategyFor(const Traversable *newTraversable)
@@ -80,18 +81,18 @@ std::unique_ptr<NavigationStrategy> Vehicle::createNavigationStrategyFor(const T
 
 qreal Vehicle::timeToReach(qreal distance)
 {
-    if (std::abs(acceleration_) < 0.1) return (speed_ > 0) ? distance / speed_ : std::numeric_limits<qreal>::max();
+    // if (std::abs(acceleration_) < 0.1) return (speed_ > 0) ? distance / speed_ : std::numeric_limits<qreal>::max();
 
-    qreal accelDistance = (cruiseSpeed_ * cruiseSpeed_ - speed_ * speed_) / (2 * comfAcceleration_); // from stop at a=1.8 and v_cruise=13.8 => 52.9m
+    qreal accelDistance = (cruiseSpeed_ * cruiseSpeed_ - speed_ * speed_) / (2 * maxAcceleration_); // from stop at a=1.8 and v_cruise=13.8 => 52.9m
 
     if (accelDistance > distance)
     {
         // solve for t: d = v0t + 1/2at^2 => t = (-v + sqrt(v^2 + 2ad)) / a
-        return (-speed_ + std::sqrt(speed_ * speed_ + 2 * comfAcceleration_ * distance)) / comfAcceleration_;
+        return (-speed_ + std::sqrt(speed_ * speed_ + 2 * maxAcceleration_ * distance)) / maxAcceleration_;
     }
     else
     {
-        qreal accelTime = (cruiseSpeed_ - speed_) / comfAcceleration_;
+        qreal accelTime = (cruiseSpeed_ - speed_) / maxAcceleration_;
         qreal cruiseDistance = distance - accelDistance;
         qreal cruiseTime = cruiseDistance / cruiseSpeed_;
         return accelTime + cruiseTime;

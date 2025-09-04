@@ -66,15 +66,15 @@ void Simulation::initialize()
     is1Router->addRoadwayFlows(r5->roadway(is1), {{r2->roadway(is2), 1}, {r3->roadway(is3), 1}});
 
     auto is2Gen = traffic_->generator(is2);
-    is2Gen->flow(500.0);
+    is2Gen->flow(1200.0);
     is2Gen->validate();
 
     auto is3Gen = traffic_->generator(is3);
-    is3Gen->flow(300.0);
+    is3Gen->flow(1300.0);
     is3Gen->validate();
 
     auto is5Gen = traffic_->generator(is5);
-    is5Gen->flow(100.0);
+    is5Gen->flow(1500.0);
     is5Gen->validate();
 
     traffic_->createAgent<Vehicle>(r2->roadway(is1)->lanes()[0].get(), traffic_.get(), network_->geometry());

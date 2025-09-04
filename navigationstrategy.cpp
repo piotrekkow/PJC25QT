@@ -21,7 +21,6 @@ LaneNavigationStrategy::LaneNavigationStrategy(Vehicle *vehicle, const Traffic *
     : NavigationStrategy(vehicle, traffic, geometry), lane_{ lane }
 {
     designatedNextRoadway_ = traffic_->router(lane_->intersection())->route(lane_->roadway());
-    qDebug() << "dnr: " << designatedNextRoadway_;
 }
 
 const Traversable *LaneNavigationStrategy::next() const
@@ -53,9 +52,11 @@ bool LaneNavigationStrategy::canSafelyProceed(const std::vector<ConflictData> &c
             // TODO: Don't check other vehicles in queue
             // TODO: When speed limiting for curves is implemented might mess this up
 
-            if (approachTime + minTimeGap_ < otherApproachTime || approachTime - minTimeGap_ > otherApproachTime)
-                // enough time to leave cp before other reaches it || by the time we reach cp other will have already left
+            if (std::abs(approachTime - otherApproachTime) < minTimeGap_)
+            {
+                // Unsafe gap, we must wait.
                 return false;
+            }
         }
     }
     return true;
@@ -110,9 +111,11 @@ bool ConnectionNavigationStrategy::canSafelyProceed(const std::vector<ConflictDa
             // TODO: Don't check other vehicles in queue
             // TODO: When speed limiting for curves is implemented might mess this up
 
-            if (approachTime + minTimeGap_ < otherApproachTime || approachTime - minTimeGap_ > otherApproachTime)
-                // enough time to leave cp before other reaches it || by the time we reach cp other will have already left
+            if (std::abs(approachTime - otherApproachTime) < minTimeGap_)
+            {
+                // Unsafe gap, we must wait.
                 return false;
+            }
         }
     }
     return true;

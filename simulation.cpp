@@ -57,8 +57,8 @@ void Simulation::initialize()
 
     is1->createConnection(r2->roadway(is1)->lanes()[0].get(), r5->roadway(is5)->lanes()[0].get());
 
-    r2->roadway(is1)->priority(PriorityType::Priority);
-    r3->roadway(is1)->priority(PriorityType::Stop);
+    // r2->roadway(is1)->priority(PriorityType::Priority);
+    // r3->roadway(is1)->priority(PriorityType::Stop);
 
     auto is1Router = traffic_->router(is1);
     is1Router->addRoadwayFlows(r2->roadway(is1), {{r3->roadway(is3), 1}, {r4->roadway(is4), 1}, {r5->roadway(is5), 1}});

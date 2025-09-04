@@ -29,7 +29,7 @@ class Renderer : public TrafficObserver
     QGraphicsItemGroup* staticLayer_;
     QGraphicsScene* scene_;
 
-    bool debugMode{ false };
+    bool debugMode_{ true };
 
 public:
     Renderer(QGraphicsScene* scene);

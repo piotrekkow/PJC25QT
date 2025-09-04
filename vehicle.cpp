@@ -9,9 +9,7 @@ Vehicle::Vehicle(Lane *initialLane, const Traffic *traffic, const GeometryManage
     : Agent(initialLane, traffic, geometry, 5.0, 2.0)
     , acceleration_{ 0.0 }
     , cruiseSpeed_{ initialLane->speedLimit() }
-    , stoppingController_(1.0, 0.4, 0.02)
-    , followingController_(0.6, 0.4)
-    , cruiseController_(1.0, 0.5)
+    , controller_(1.0, 0.1, 0.2)
 {}
 
 std::unique_ptr<Vehicle> Vehicle::create(Lane *initialLane, const Traffic *traffic, const GeometryManager *geometry)
@@ -24,7 +22,7 @@ std::unique_ptr<Vehicle> Vehicle::create(Lane *initialLane, const Traffic *traff
 qreal Vehicle::decisionDistance() const
 {
     // allows for a very comfortable margin for stopping at 1 m/s^2, reasonable substitute for infinity
-    return speed_ * speed_ / 2;
+    return speed_ * speed_ / 3;
 }
 
 void Vehicle::applyPhysics(qreal deltaTime)
@@ -35,20 +33,38 @@ void Vehicle::applyPhysics(qreal deltaTime)
 
 void Vehicle::updateDynamics(qreal deltaTime)
 {
-    qreal reqAccel;
-    // if (nextStopDistance_ < speed_ * speed_)
-    // {
-    //     qreal buffer = minDistanceGap_ + 1.2 * speed_;
-    //     qreal referenceSpeed = std::sqrt(std::max(0.0, 2 * comfDeceleration_ * std::max(0.0, nextStopDistance_ - buffer)));
-    //     reqAccel = stoppingController_.update(referenceSpeed, speed_, deltaTime);
-    //     qDebug() << acceleration_;
-    // }
-    // else
-    // {
-    //     reqAccel = cruiseController_.update(cruiseSpeed_, speed_, deltaTime);
-    //     qDebug() << this << ": a = " << acceleration_;
-    // }
-    reqAccel = cruiseController_.update(cruiseSpeed_, speed_, deltaTime);
+    qreal reqAccel = 0.0;
+    qreal setpoint = 0.0;   // speed or decel
+
+    // LeadVehicleData lead = getLeadVehicleData();
+    // qreal safeDistance = minDistanceGap_ + speed_ * minTimeGap_ + (speed_ * lead.relativeSpeed) / (2 * comfDeceleration_);
+
+    if (nextStopDistance_ > 0 && nextStopDistance_ < decisionDistance())
+    {
+        // Stop
+        qreal stopKp = 10 / (speed_ + 5);
+        controller_.gains(stopKp, 0.0, 0.2);
+
+        qreal buffer = 1.5 * speed_;
+        qreal targetSpeed = std::sqrt(2.0 * (nextStopDistance_ - buffer) * comfDeceleration_);
+        setpoint = targetSpeed;
+        reqAccel = controller_.update(setpoint, speed_, deltaTime);
+        debugAction_ = DebugAction::Stopping;
+    }
+    else
+    {
+        // Cruise
+        controller_.gains(1.0, 0.05, 0.7);
+        setpoint = cruiseSpeed_;
+        reqAccel = controller_.update(setpoint, speed_, deltaTime);
+        debugAction_ = DebugAction::Proceeding;
+    }
+
+    qreal maxAccelChange = jerk_ * deltaTime;
+
+    acceleration_ += (reqAccel > acceleration_) ? std::min(maxAccelChange, reqAccel - acceleration_)
+                                                : std::max(-maxAccelChange, acceleration_ - reqAccel);
+
     acceleration_ = std::clamp(reqAccel, -maxDeceleration_, maxAcceleration_);
 }
 

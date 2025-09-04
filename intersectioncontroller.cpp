@@ -15,10 +15,8 @@ std::vector<ConflictData> SignController::conflictsMustYieldTo(const Connection 
 
         std::vector<PriorityAgentInfo> foundAgents;
 
-
         for (const auto& agent : agents)
         {
-
             const auto* traversable = agent->traversable();
             const auto* priorityConn = cp->priorityConnection();
 
@@ -44,5 +42,5 @@ bool IntersectionController::weHavePriorityInConflict(const Connection *us, cons
 {
     // consider relative regulatory (sign) priority based on whether we have right-hand rule priority
     return (cp->isRHPriority(us)) ? us->regulatoryPriority() >= cp->yieldConnection()->regulatoryPriority()
-                                : us->regulatoryPriority() > cp->priorityConnection()->regulatoryPriority();
+                                  : us->regulatoryPriority() > cp->priorityConnection()->regulatoryPriority();
 }

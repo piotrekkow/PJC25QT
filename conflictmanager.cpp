@@ -9,22 +9,6 @@ ConflictManager::ConflictManager(const Intersection *intersection, const Geometr
     , intersection_{ intersection }
 {}
 
-namespace {
-// Helper function to get the incoming tangent of a connection's source lane
-QLineF getIncomingTangent(const Connection* connection, const GeometryManager* geometry)
-{
-    const auto& path = geometry->lane(connection->source());
-    if (path.elementCount() < 2)
-    {
-        return {};
-    }
-    // Use the last segment of the lane path to determine the incoming direction
-    QPointF p1 = path.pointAtPercent(0.99);
-    QPointF p2 = path.pointAtPercent(1.0);
-    return QLineF(p1, p2);
-}
-}
-
 void ConflictManager::recalculate()
 {
     conflictPoints_.clear();
@@ -43,15 +27,24 @@ void ConflictManager::recalculate()
             const Connection* priorityConnection = connA;
             const Connection* yieldConnection = connB;
 
-            QLineF tangentA = getIncomingTangent(connA, geometry_);
-            QLineF tangentB = getIncomingTangent(connB, geometry_);
+            // Get the geometry paths for both connections
+            const QPainterPath& pathA = geometry_->connection(connA);
+            const QPainterPath& pathB = geometry_->connection(connB);
 
-            // A positive result means tangentB is to the left of tangentA.
-            qreal crossProduct = tangentA.dx() * tangentB.dy() - tangentA.dy() * tangentB.dx();
+            if (pathA.elementCount() < 1 || pathB.elementCount() < 1) continue;
 
-            if (crossProduct > 0)
+            // Create vectors from the start to the end of each connection's path
+            QPointF vectorA = { pathA.elementAt(pathA.elementCount() - 1).x - pathA.elementAt(0).x,
+                                pathA.elementAt(pathA.elementCount() - 1).y - pathA.elementAt(0).y };
+            QPointF vectorB = { pathB.elementAt(pathB.elementCount() - 1).x - pathB.elementAt(0).x,
+                                pathB.elementAt(pathB.elementCount() - 1).y - pathB.elementAt(0).y };
+
+            // A negative result means vectorB is to the right of vectorA.
+            qreal crossProduct = vectorA.x() * vectorB.y() - vectorA.y() * vectorB.x();
+
+            if (crossProduct < 0)
             {
-                // connB is to the right of connA, so connB has priority.
+                // connB's path is to the right of connA's path, so connB has priority.
                 priorityConnection = connB;
                 yieldConnection = connA;
             }

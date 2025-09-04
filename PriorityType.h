@@ -4,7 +4,7 @@
  *        priorities of connections at the next intersection.
  */
 enum class PriorityType {
-    Priority,   // has right of way
+    Stop,       // must stop then yield
     Yield,      // must yield to priority
-    Stop        // must stop then yield
+    Priority    // has right of way
 };

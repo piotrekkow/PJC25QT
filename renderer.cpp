@@ -26,8 +26,8 @@ void Renderer::initializeStaticLayer(const RoadNetwork *network)
     staticLayer_->setZValue(-10);
     scene_->addItem(staticLayer_);
 
-    debugMode ? drawStaticElementsDebug(network)
-              : drawStaticElements(network);
+    debugMode_ ? drawStaticElementsDebug(network)
+               : drawStaticElements(network);
 
     staticLayer_->setCacheMode(QGraphicsItem::DeviceCoordinateCache);
 }
@@ -73,7 +73,7 @@ void Renderer::updateDynamicLayer(const Traffic *traffic, const RoadNetwork *net
 
 void Renderer::onAgentAdded(const Agent* agent)
 {
-    auto painter = painterFactory_.createPainterFor(agent, debugMode);
+    auto painter = painterFactory_.createPainterFor(agent, debugMode_);
     if (painter) {
         painter->setup(agent, scene_);
         agentPainters_[agent] = std::move(painter);

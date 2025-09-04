@@ -60,11 +60,33 @@ void VehiclePainter::update(const Agent* agent)
     if (debugMode_ && renderable_.debugText) {
         const auto* vehicle = static_cast<const Vehicle*>(agent);
 
-        QString agentDebugParams = QString::asprintf("%p: a = %.3f, \nv = %.3f, v_ = %.3f",
+        std::string debugActionS;
+
+        switch (vehicle->debugAction())
+        {
+        case DebugAction::None:
+            debugActionS = "None";
+            break;
+        case DebugAction::Proceeding:
+            debugActionS = "Proceeding";
+            break;
+        case DebugAction::Following:
+            debugActionS = "Following";
+            break;
+        case DebugAction::Stopping:
+            debugActionS = "Stopping";
+            break;
+        default:
+            debugActionS = "Unknown";
+            break;
+        }
+
+        QString agentDebugParams = QString::asprintf("%p: a = %.3f, \nv = %.3f, v_ = %.3f, \n%s",
                                                      (void *)vehicle,
                                                      vehicle->acceleration(),
                                                      vehicle->speed(),
-                                                     vehicle->cruiseSpeed()
+                                                     vehicle->cruiseSpeed(),
+                                                     debugActionS.c_str()
                                                      );
 
         renderable_.debugText->setPlainText(agentDebugParams);

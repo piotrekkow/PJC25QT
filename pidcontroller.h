@@ -16,7 +16,7 @@ public:
     PIDController(qreal kp, qreal ki, qreal kd);
     PIDController(qreal kp, qreal ki);
 
-    qreal update(qreal setpoint, qreal currentValue, qreal deltaTime);
+    qreal update(qreal setpoint, qreal currentValue, qreal deltaTime, qreal feedforward = 0.0);
     void reset();
     void gains(qreal kp, qreal ki, qreal kd) { kp_ = kp; ki_ = ki; kd_ = kd; }
 };

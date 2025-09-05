@@ -9,8 +9,9 @@ Vehicle::Vehicle(Lane *initialLane, const Traffic *traffic, const GeometryManage
     : Agent(initialLane, traffic, geometry, 5.0, 2.0)
     , acceleration_{ 0.0 }
     , cruiseSpeed_{ initialLane->speedLimit() }
-    , controller_(1.0, 0.1, 0.2)
-{}
+{
+    driver_ = std::make_unique<DefaultDriver>();
+}
 
 std::unique_ptr<Vehicle> Vehicle::create(Lane *initialLane, const Traffic *traffic, const GeometryManager *geometry)
 {
@@ -19,54 +20,35 @@ std::unique_ptr<Vehicle> Vehicle::create(Lane *initialLane, const Traffic *traff
     return vehicle;
 }
 
-qreal Vehicle::decisionDistance() const
-{
-    // allows for a very comfortable margin for stopping at 1/2 comfDeceleration_, reasonable substitute for infinity
-    return (speed_ * speed_ / comfDeceleration_) + 2 * minDistanceGap_;
-}
-
 void Vehicle::applyPhysics(qreal deltaTime)
 {
     speed_ += acceleration_ * deltaTime;
+
+    // const qreal stoppingSpeedThreshold = 0.1;
+
+    // if ((driver_->action() == DriverAction::Stopping || driver_->action() == DriverAction::Queueing) && speed_ < stoppingSpeedThreshold)
+    // {
+    //     speed_ = 0.0;
+    //     acceleration_ = 0.0;
+    // }
+
+    if (speed_ < 0.5 && acceleration_ < 0)
+    {
+        speed_ = 0.0;
+        acceleration_ = 0.0;
+        driver_->reset();
+
+    }
+
     Agent::applyPhysics(deltaTime);
 }
 
 void Vehicle::updateDynamics(qreal deltaTime)
 {
-    qreal reqAccel = 0.0;
-    qreal setpoint = 0.0;   // speed or decel
+    qreal desiredAccel = (driver_) ? driver_->desiredAcceleration(this, decisionContext(), deltaTime)
+                                   : 0.0;
 
-    // LeadVehicleData lead = getLeadVehicleData();
-    // qreal safeDistance = minDistanceGap_ + speed_ * minTimeGap_ + (speed_ * lead.relativeSpeed) / (2 * comfDeceleration_);
-
-    if (nextStopDistance_ > 0 && nextStopDistance_ < decisionDistance())
-    {
-        // Stop
-        // qreal stopKp = 10 / (speed_ + 2);
-
-        // change kd linearly with speed_
-        controller_.gains(1.0, 0.0, 0.0);
-        qreal safeSpeed = std::sqrt(2.0 * std::max(0.0, nextStopDistance_ - minDistanceGap_ -(speed_ * 0.5))  * comfDeceleration_);
-        setpoint = (speed_ < safeSpeed) ? safeSpeed
-                                        : 0.0;
-        reqAccel = controller_.update(setpoint, speed_, deltaTime);
-        debugAction_ = DebugAction::Stopping;
-    }
-    else
-    {
-        // Cruise
-        controller_.gains(1.0, 0.05, 0.7);
-        setpoint = cruiseSpeed_;
-        reqAccel = controller_.update(setpoint, speed_, deltaTime);
-        debugAction_ = DebugAction::Proceeding;
-    }
-
-    qreal maxAccelChange = jerk_ * deltaTime;
-    qreal reqAccelChange = reqAccel - acceleration_;
-
-    reqAccelChange = std::clamp(reqAccelChange, -maxAccelChange, maxAccelChange);
-    acceleration_ += reqAccelChange;
-    acceleration_ = std::clamp(acceleration_, -maxDeceleration_, maxAcceleration_);
+    applyAccelerationLimits(desiredAccel, deltaTime);
 }
 
 std::unique_ptr<NavigationStrategy> Vehicle::createNavigationStrategyFor(const Traversable *newTraversable)
@@ -77,6 +59,22 @@ std::unique_ptr<NavigationStrategy> Vehicle::createNavigationStrategyFor(const T
         cruiseSpeed_ = vehTraversable->speedLimit();
     }
     return nullptr;
+}
+
+void Vehicle::applyAccelerationLimits(qreal desiredAcceleration, qreal deltaTime)
+{
+    qreal maxAccelChange = maxJerk_ * deltaTime;
+    qreal reqAccelChange = desiredAcceleration - acceleration_;
+
+    reqAccelChange = std::clamp(reqAccelChange, -maxAccelChange, maxAccelChange);
+    acceleration_ += reqAccelChange;
+    acceleration_ = std::clamp(acceleration_, -maxDeceleration_, maxAcceleration_);
+}
+
+const Vehicle *Vehicle::getLeadVehicle() const
+{
+    const Agent* leadAgent = traffic_->findLeadVehicle(this);
+    return (leadAgent) ? static_cast<const Vehicle*>(leadAgent) : nullptr;
 }
 
 qreal Vehicle::timeToReach(qreal distance)
@@ -97,4 +95,17 @@ qreal Vehicle::timeToReach(qreal distance)
         qreal cruiseTime = cruiseDistance / cruiseSpeed_;
         return accelTime + cruiseTime;
     }
+}
+
+DecisionContext Vehicle::decisionContext() const
+{
+    return {
+        .leadVehicle = traffic_->findLeadVehicle(this),
+        .distanceToStop = navigationStrategy_->distanceToStop(),
+        .speedLimit = cruiseSpeed_,
+        .acceleration = acceleration_,
+        .maxAcceleration = maxAcceleration_,
+        .maxDeceleration = maxDeceleration_,
+        .maxJerk = maxJerk_
+    };
 }

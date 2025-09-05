@@ -94,6 +94,7 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
         alignedtextitem.h alignedtextitem.cpp
         agentpainter.h agentpainter.cpp
         trafficobserver.h
+        drivermodel.h drivermodel.cpp
 
 
 

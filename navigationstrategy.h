@@ -30,14 +30,14 @@ public:
         : vehicle_{ vehicle }, traffic_{ traffic }, geometry_{ geometry } {}
 
     virtual ~NavigationStrategy() = default;
-
-    void update();
     virtual const Traversable* next() const = 0;
+    qreal distanceToStop() const;
 
 protected:
     virtual qreal distanceToStopLine() = 0;
     virtual bool canSafelyProceed(const std::vector<ConflictData>& conflicts) const = 0;
     virtual const std::vector<ConflictData> conflictsMustYieldTo() const = 0;
+    virtual qreal calculateDistanceToStopLine() const = 0;
 
 private:
     qreal timeToReach(qreal distance) const;
@@ -57,6 +57,7 @@ protected:
     qreal distanceToStopLine() override;
     bool canSafelyProceed(const std::vector<ConflictData>& conflicts) const override;
     const std::vector<ConflictData> conflictsMustYieldTo() const override;
+    qreal calculateDistanceToStopLine() const override;
 
 private:
     const Connection* nextConnection() const;
@@ -77,6 +78,7 @@ protected:
     qreal distanceToStopLine() override;
     bool canSafelyProceed(const std::vector<ConflictData>& conflicts) const override;
     const std::vector<ConflictData> conflictsMustYieldTo() const override;
+    qreal calculateDistanceToStopLine() const override;
 
 private:
     qreal distanceToConflict(const ConflictPoint* cp) const;

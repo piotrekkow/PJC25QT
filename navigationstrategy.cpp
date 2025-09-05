@@ -1,19 +1,18 @@
 #include "navigationstrategy.h"
-#include "intersection.h"
 #include "lane.h"
 #include "traffic.h"
 #include "ConflictData.h"
+#include "conflictpoint.h"
 #include "vehicle.h"
-#include "road.h"
 #include <qdebug.h>
 
-void NavigationStrategy::update()
+qreal NavigationStrategy::distanceToStop() const
 {
     auto conflicts = conflictsMustYieldTo();
-    qreal distanceToStop = (canSafelyProceed(conflicts)) ? std::numeric_limits<qreal>::max()
-                                                         : distanceToStopLine();
-
-    vehicle_->nextStopDistance(distanceToStop);
+    if (canSafelyProceed(conflicts)) {
+        return std::numeric_limits<qreal>::max();
+    }
+    return calculateDistanceToStopLine();
 }
 
 
@@ -66,6 +65,13 @@ const std::vector<ConflictData> LaneNavigationStrategy::conflictsMustYieldTo() c
 {
     auto controller = traffic_->controller(lane_->intersection());
     return controller->conflictsMustYieldTo(nextConnection(), traffic_->agents(), geometry_);
+}
+
+qreal LaneNavigationStrategy::calculateDistanceToStopLine() const
+{
+    const Connection* next = nextConnection();
+    return (next) ? lane_->length(geometry_) - vehicle_->progress() + next->stopLineOffset()
+                  : std::numeric_limits<qreal>::max();
 }
 
 qreal LaneNavigationStrategy::distanceToConflict(const ConflictPoint* cp) const
@@ -125,6 +131,11 @@ const std::vector<ConflictData> ConnectionNavigationStrategy::conflictsMustYield
 {
     auto controller = traffic_->controller(connection_->intersection());
     return controller->conflictsMustYieldTo(connection_, traffic_->agents(), geometry_);
+}
+
+qreal ConnectionNavigationStrategy::calculateDistanceToStopLine() const
+{
+    return connection_->stopLineOffset() - vehicle_->progress();
 }
 
 qreal ConnectionNavigationStrategy::distanceToConflict(const ConflictPoint *cp) const

@@ -1,4 +1,5 @@
 #include "traffic.h"
+#include "vehicle.h"
 #include <vector>
 #include "roadnetwork.h"
 #include <QDebug>
@@ -92,6 +93,28 @@ int Traffic::getRemovedVehicleCount(const Intersection *intersection) const
     if (it != removedVehicleCounts_.end())
         return it->second;
     return 0;
+}
+
+const Vehicle* Traffic::findLeadVehicle(const Agent *agent) const
+{
+    const Agent* leadVehicle = nullptr;
+    qreal minDistance = std::numeric_limits<qreal>::max();
+
+    for (const auto& candidate : agents_)
+    {
+        if (agent == candidate.get()) continue;
+
+        if (agent->traversable() == candidate->traversable() && candidate->progress() > agent->progress())
+        {
+            qreal distance = candidate->progress() - agent->progress();
+            if (distance < minDistance)
+            {
+                minDistance = distance;
+                leadVehicle = candidate.get();
+            }
+        }
+    }
+    return static_cast<const Vehicle*>(leadVehicle);
 }
 
 void Traffic::signalAgentAdded(const Agent* agent) {

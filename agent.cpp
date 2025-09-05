@@ -18,12 +18,13 @@ Agent::Agent(const Traversable *traversable, const Traffic *traffic, const Geome
 
 void Agent::update(qreal deltaTime)
 {
-    navigate();
+    if (navigationStrategy_)
+    {
+        updateDynamics(deltaTime);
+    }
 
-    updateDynamics(deltaTime);
     applyPhysics(deltaTime);
-
-    updatePositionAndAngle();
+    navigate();
 }
 
 void Agent::updatePositionAndAngle()
@@ -43,6 +44,7 @@ void Agent::updatePositionAndAngle()
 void Agent::applyPhysics(qreal deltaTime)
 {
     progress_ += speed_ * deltaTime;
+    updatePositionAndAngle();
 }
 
 void Agent::navigate()
@@ -67,7 +69,4 @@ void Agent::navigate()
             markedForRemoval_ = true;
         }
     }
-
-    if (navigationStrategy_)
-        navigationStrategy_->update();
 }

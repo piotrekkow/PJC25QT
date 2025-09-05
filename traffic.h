@@ -56,6 +56,8 @@ public:
     // template<typename GeneratorType, typename... Args>
     // void addGenerator(Args&&... args);
 
+    const Vehicle* findLeadVehicle(const Agent* agent) const;
+
 private:
     void signalAgentAdded(const Agent* agent);
     void signalAgentRemoved(const Agent* agent);

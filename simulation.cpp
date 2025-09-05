@@ -77,8 +77,8 @@ void Simulation::initialize()
     is5Gen->flow(1500.0);
     is5Gen->validate();
 
-    traffic_->createAgent<Vehicle>(r2->roadway(is1)->lanes()[0].get(), traffic_.get(), network_->geometry());
-    traffic_->createAgent<Vehicle>(r3->roadway(is1)->lanes()[0].get(), traffic_.get(), network_->geometry());
+    // traffic_->createAgent<Vehicle>(r2->roadway(is1)->lanes()[0].get(), traffic_.get(), network_->geometry());
+    // traffic_->createAgent<Vehicle>(r3->roadway(is1)->lanes()[0].get(), traffic_.get(), network_->geometry());
 
     is1->conflictManager()->recalculate();
     for (const auto& intersection : network_->intersections())

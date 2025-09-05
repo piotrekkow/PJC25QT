@@ -64,17 +64,17 @@ void VehiclePainter::update(const Agent* agent)
 
         switch (vehicle->debugAction())
         {
-        case DebugAction::None:
-            debugActionS = "None";
-            break;
-        case DebugAction::Proceeding:
+        case DriverAction::Proceeding:
             debugActionS = "Proceeding";
             break;
-        case DebugAction::Following:
+        case DriverAction::Following:
             debugActionS = "Following";
             break;
-        case DebugAction::Stopping:
+        case DriverAction::Stopping:
             debugActionS = "Stopping";
+            break;
+        case DriverAction::Queueing:
+            debugActionS = "Queueing";
             break;
         default:
             debugActionS = "Unknown";

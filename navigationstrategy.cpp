@@ -71,7 +71,8 @@ bool LaneNavigationStrategy::canSafelyProceed(const std::vector<ConflictData> &c
 const std::vector<ConflictData> LaneNavigationStrategy::conflictsMustYieldTo() const
 {
     auto controller = traffic_->controller(lane_->intersection());
-    return controller->conflictsMustYieldTo(nextConnection(), traffic_->agents(), geometry_);
+    return (nextConnection()) ? controller->conflictsMustYieldTo(nextConnection(), traffic_->agents(), geometry_)
+                              : std::vector<ConflictData>{};
 }
 
 qreal LaneNavigationStrategy::calculateDistanceToStopLine() const

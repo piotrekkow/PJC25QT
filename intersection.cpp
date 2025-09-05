@@ -32,6 +32,20 @@ Connection* Intersection::createConnection(Lane *source, Lane *destination)
     return connectionPtr;
 }
 
+Connection *Intersection::createConnection(Road *source, Road *destination)
+{
+    auto incomingRoadway = source->roadwayInto(this);
+    auto outgoingRoadway = destination->roadwayOutOf(this);
+
+    if (!incomingRoadway || !outgoingRoadway)
+        throw std::invalid_argument("Invalid roads for connection creation.");
+
+    if (incomingRoadway->lanes().size() != 1 || outgoingRoadway->lanes().size() != 1)
+        throw std::invalid_argument("Cannot create a connection between roads. Multi-lane roadways. Use createConnection(Lane *source, Lane *destination) instead.");
+
+    return createConnection(incomingRoadway->lanes()[0].get(), outgoingRoadway->lanes()[0].get());
+}
+
 std::unordered_map<const Roadway*, std::unordered_set<const Roadway*>> Intersection::roadwayAdjacency() const
 {
     std::unordered_map<const Roadway*, std::unordered_set<const Roadway*>> adj;

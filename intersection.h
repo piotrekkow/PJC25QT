@@ -26,6 +26,7 @@ public:
 
     void addRoad(Road *road);
     Connection* createConnection(Lane* source, Lane* destination);
+    Connection* createConnection(Road *source, Road *destination);
     std::unordered_map<const Roadway*, std::unordered_set<const Roadway*>> roadwayAdjacency() const;
 };
 

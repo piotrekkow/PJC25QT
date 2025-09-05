@@ -27,13 +27,13 @@ void IntersectionRouter::addRoadwayFlows(const Roadway *from, std::vector<Roadwa
 
 const Roadway *IntersectionRouter::route(const Roadway *from) const
 {
-    // auto it = routeFlows_.find(from);
-    // if (it == routeFlows_.end() || it->second.empty())
-    //     return nullptr;
+    auto it = routeFlows_.find(from);
+    if (it == routeFlows_.end() || it->second.empty())
+        return nullptr;
 
-    // const auto& flows = it->second;
+    const auto& flows = it->second;
 
-    const auto& flows = roadwayFlows(from); // new line
+    // const auto& flows = roadwayFlows(from); // new line
 
     std::vector<int> weights;
     weights.reserve(flows.size());

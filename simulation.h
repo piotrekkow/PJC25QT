@@ -8,8 +8,8 @@
 class Simulation
 {
     const std::unique_ptr<RoadNetwork> network_;
-    const std::unique_ptr<Traffic> traffic_;
     const std::unique_ptr<Renderer> renderer_;
+    std::unique_ptr<Traffic> traffic_;
 
 public:
     Simulation(QGraphicsScene* scene);

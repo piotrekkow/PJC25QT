@@ -31,3 +31,18 @@ Connection* Intersection::createConnection(Lane *source, Lane *destination)
 
     return connectionPtr;
 }
+
+std::unordered_map<const Roadway*, std::unordered_set<const Roadway*>> Intersection::roadwayAdjacency() const
+{
+    std::unordered_map<const Roadway*, std::unordered_set<const Roadway*>> adj;
+
+    for (auto& c : connections_)
+    {
+        const Roadway* from = c->source()->roadway();
+        const Roadway* to   = c->destination()->roadway();
+
+        adj[from].insert(to);
+    }
+
+    return adj;
+}

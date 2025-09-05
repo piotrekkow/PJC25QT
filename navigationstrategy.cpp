@@ -19,7 +19,14 @@ qreal NavigationStrategy::distanceToStop() const
 LaneNavigationStrategy::LaneNavigationStrategy(Vehicle *vehicle, const Traffic *traffic, const GeometryManager *geometry, const Lane *lane)
     : NavigationStrategy(vehicle, traffic, geometry), lane_{ lane }
 {
-    designatedNextRoadway_ = traffic_->router(lane_->intersection())->route(lane_->roadway());
+    if (auto nextRouter = traffic_->router(lane_->intersection()))
+    {
+        designatedNextRoadway_ = nextRouter->route(lane_->roadway());
+    }
+    else
+    {
+        designatedNextRoadway_ = nullptr;
+    }
 }
 
 const Traversable *LaneNavigationStrategy::next() const

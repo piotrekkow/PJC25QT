@@ -3,7 +3,7 @@
 #include "intersection.h"
 #include "agent.h"
 #include "lane.h"
-#include "DebugHelpers.h"
+// #include "DebugHelpers.h"
 
 std::vector<ConflictData> SignController::conflictsMustYieldTo(const Connection *conn, const std::vector<std::unique_ptr<Agent> > &agents, const GeometryManager* geometry) const
 {

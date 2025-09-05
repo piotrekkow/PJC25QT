@@ -10,7 +10,7 @@ qreal DefaultDriver::desiredAcceleration(const Vehicle *vehicle, DecisionContext
     bool followBehindVehicle = false;
     bool queueBehindVehicle = false;
 
-    if (auto lead = context.leadVehicle)
+    if (auto& lead = context.leadVehicle)
     {
         qreal relativeDistance = lead->progress() - lead->length() - vehicle->progress();
         followBehindVehicle = relativeDistance < decisionDistance(vehicle, context);
@@ -27,7 +27,7 @@ qreal DefaultDriver::desiredAcceleration(const Vehicle *vehicle, DecisionContext
     {
         qreal effectiveStopDistance = context.distanceToStop - minDistanceGap_;
 
-        if (auto lead = context.leadVehicle)
+        if (auto& lead = context.leadVehicle)
         {
             qreal posLeadVehicleRear = lead->progress() - lead->length();
             qreal distanceToLeadRear = posLeadVehicleRear - vehicle->progress();

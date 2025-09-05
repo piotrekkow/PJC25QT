@@ -12,7 +12,9 @@ FlowGenerator::FlowGenerator(const Intersection *intersection)
     , lastGeneratedVehicle_{ nullptr }
     , generatedCount_{ 0 }
     , backlog_{ 0 }
-{}
+{
+    establishFlowSource();
+}
 
 void FlowGenerator::update(qreal deltaTime, Traffic* traffic, const GeometryManager* geometry)
 {
@@ -25,7 +27,8 @@ void FlowGenerator::update(qreal deltaTime, Traffic* traffic, const GeometryMana
 
     if (backlog_ > 0)
     {
-        if (!lastGeneratedVehicle_ || (lastGeneratedVehicle_ && lastGeneratedVehicle_->progress() > 1.5 * lastGeneratedVehicle_->length()))
+        bool enoughSpaceForNextVehicle = !lastGeneratedVehicle_ || (lastGeneratedVehicle_ && lastGeneratedVehicle_->progress() > 1.1 * lastGeneratedVehicle_->length());
+        if (enoughSpaceForNextVehicle)
         {
             // TODO: logic to spread out vehicles if roadway has more lanes, integration with router so that vehicle more likely to appear at lane connecting to where it's being routed
             lastGeneratedVehicle_ = traffic->createAgent<Vehicle>(flowSource_->lanes()[0].get(), traffic, geometry);
@@ -38,7 +41,6 @@ void FlowGenerator::update(qreal deltaTime, Traffic* traffic, const GeometryMana
 void FlowGenerator::validate()
 {
     if (flow_ == 0) qDebug() << "WARNING: Intersection " << intersection_ << " is designated as a flow generator but generates 0 vehicles per hour.";
-    establishFlowSource();
 }
 
 bool FlowGenerator::shouldTrigger(qreal deltaTime) const

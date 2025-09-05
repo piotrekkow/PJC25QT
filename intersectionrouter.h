@@ -22,7 +22,11 @@ public:
     IntersectionRouter(const Intersection* intersection);
 
     void addRoadwayFlows(const Roadway* from, std::vector<RoadwayFlow> flowsTo);
+
     const Roadway* route(const Roadway* from) const;
-    const std::vector<RoadwayFlow> roadwayFlows(const Roadway* from) const;
     void validate() const;
+
+private:
+    const std::vector<RoadwayFlow> roadwayFlows(const Roadway* from) const;
+
 };

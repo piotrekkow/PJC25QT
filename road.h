@@ -21,13 +21,21 @@ public:
     const Intersection* startIntersection() const { return startIntersection_; }
     const Intersection* endIntersection() const { return endIntersection_; }
 
-    const Roadway* roadway(const Intersection* target) const { return (target == startIntersection_) ? backwardRoadway_.get()
-                                                                                                     : (target == endIntersection_) ? forwardRoadway_.get()
-                                                                                                                                    : nullptr; }
+    const Roadway* roadwayInto(const Intersection* target) const { return (target == startIntersection_) ? backwardRoadway_.get()
+                                                                                                         : (target == endIntersection_) ? forwardRoadway_.get()
+                                                                                                                                        : nullptr; }
 
-    Roadway* roadway(const Intersection* target) { return (target == startIntersection_) ? backwardRoadway_.get()
-                                                          : (target == endIntersection_) ? forwardRoadway_.get()
-                                                                                         : nullptr; }
+    Roadway* roadwayInto(const Intersection* target) { return (target == startIntersection_) ? backwardRoadway_.get()
+                                                                                             : (target == endIntersection_) ? forwardRoadway_.get()
+                                                                                                                            : nullptr; }
+
+    const Roadway* roadwayOutOf(const Intersection* target) const { return (target == startIntersection_) ? forwardRoadway_.get()
+                                                                                                          : (target == endIntersection_) ? backwardRoadway_.get()
+                                                                                                                                         : nullptr; }
+
+    Roadway* roadwayOutOf(const Intersection* target) { return (target == startIntersection_) ? forwardRoadway_.get()
+                                                                                              : (target == endIntersection_) ? backwardRoadway_.get()
+                                                                                                                             : nullptr; }
 
     std::vector<const Roadway*> roadways() const;
 

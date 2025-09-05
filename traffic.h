@@ -27,6 +27,7 @@ public:
     Traffic(RoadNetwork* network);
 
     void update(qreal deltaTime);
+    void validate();
 
     void addObserver(TrafficObserver* observer) { observers_.push_back(observer); }
     void removeObserver(TrafficObserver* observer) {observers_.erase(std::remove(observers_.begin(), observers_.end(), observer), observers_.end()); }
@@ -45,13 +46,14 @@ public:
     const std::vector<std::unique_ptr<Agent>>& agents() const { return agents_; }
     void removeAgent(Agent* agent);
 
-    Intersection* createIntersection(QPointF position);
+    // Intersection* createIntersection(QPointF position);
+
     const IntersectionController* controller(const Intersection* intersection) const;
     const IntersectionRouter* router(const Intersection* intersection) const;
     IntersectionRouter* router(const Intersection* intersection);
     const FlowGenerator *generator(const Intersection *intersection) const;
     FlowGenerator* generator(const Intersection* intersection);
-    int getRemovedVehicleCount(const Intersection* intersection) const;
+    int removedVehicleCount(const Intersection* intersection) const;
 
     // template<typename GeneratorType, typename... Args>
     // void addGenerator(Args&&... args);
@@ -59,6 +61,7 @@ public:
     const Vehicle* findLeadVehicle(const Agent* agent) const;
 
 private:
+    void populateIntersection(Intersection* intersection);
     void signalAgentAdded(const Agent* agent);
     void signalAgentRemoved(const Agent* agent);
 };

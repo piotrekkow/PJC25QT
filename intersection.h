@@ -2,6 +2,7 @@
 
 #include <QPointF>
 #include <memory>
+#include "unordered_set"
 #include "connection.h"
 #include "conflictmanager.h"
 
@@ -25,5 +26,6 @@ public:
 
     void addRoad(Road *road);
     Connection* createConnection(Lane* source, Lane* destination);
+    std::unordered_map<const Roadway*, std::unordered_set<const Roadway*>> roadwayAdjacency() const;
 };
 

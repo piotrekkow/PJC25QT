@@ -54,7 +54,6 @@ void Agent::navigate()
     {
         if (!traversable_ || markedForRemoval_) return;
 
-        qDebug() << '\n' << this << "reached end of traversable." <<'\n';
         const Traversable* nextTraversable = navigationStrategy_->next();
         if (nextTraversable)
         {
@@ -67,6 +66,8 @@ void Agent::navigate()
             // End of route
             navigationStrategy_ = nullptr;
             markedForRemoval_ = true;
+
+            qDebug() << this << "reached end of route." <<'\n';
         }
     }
 }

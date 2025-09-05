@@ -46,19 +46,30 @@ void Renderer::updateDynamicLayer(const Traffic *traffic, const RoadNetwork *net
     for (const auto& intersectionPtr : network->intersections())
     {
         const Intersection* intersection = intersectionPtr.get();
-        int genCount = traffic->generator(intersection)->generatedCount();
-        int backlog = traffic->generator(intersection)->backlog();
-        QString intersectionData = QString("gen: %1\nbacklog: %2").arg(genCount).arg(backlog);
+        QStringList dataParts;
+
+        // First condition (gen)
+        if (auto gen = traffic->generator(intersection))
+        {
+            int genCount = gen->generatedCount();
+            int backlog = gen->backlog();
+            dataParts.append(QString("gen: %1\nbacklog: %2").arg(genCount).arg(backlog));
+        }
+
+        if (int rmCount = traffic->removedVehicleCount(intersection); rmCount > 0)
+        {
+            dataParts.append(QString("rm: %1").arg(rmCount));
+        }
+
+        QString intersectionData = dataParts.join('\n');
 
         auto it = intersectionTextItems_.find(intersection);
         if (it != intersectionTextItems_.end())
         {
-            // Text item exists, just update its content
             it->second->setPlainText(intersectionData);
         }
         else
         {
-            // Text item doesn't exist, create it once
             QFont font;
             font.setPointSize(4);
             auto textItem = new QGraphicsTextItem(intersectionData);
@@ -203,7 +214,7 @@ void Renderer::drawRegulatorySigns(const Intersection *intersection, const Geome
     if (intersection->roads().size() < 2) return;
     for (const auto& road : intersection->roads())
     {
-        const Roadway* incomingRoadway = road->roadway(intersection);
+        const Roadway* incomingRoadway = road->roadwayInto(intersection);
         if (incomingRoadway)
         {
             QGraphicsItemGroup* sign = nullptr;

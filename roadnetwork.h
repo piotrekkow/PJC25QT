@@ -14,7 +14,7 @@ class RoadNetwork
 public:
     RoadNetwork();
     ~RoadNetwork();
-    Intersection* createIntersectionTopology(QPointF position);
+    Intersection* createIntersection(QPointF position);
     Road* createRoad(Intersection* start, Intersection* end);
     const std::vector<std::unique_ptr<Intersection>>& intersections() const { return intersections_; }
     const std::vector<std::unique_ptr<Road>>& roads() const { return roads_; }

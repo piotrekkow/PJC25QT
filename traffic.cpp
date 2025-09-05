@@ -1,12 +1,20 @@
 #include "traffic.h"
 #include "vehicle.h"
-#include <vector>
+
 #include "roadnetwork.h"
+#include "intersection.h"
+
+#include <vector>
 #include <QDebug>
 
 Traffic::Traffic(RoadNetwork *network)
     : network_{ network }
-{}
+{
+    for (const auto& intersection : network_->intersections())
+    {
+        populateIntersection(intersection.get());
+    }
+}
 
 void Traffic::update(qreal deltaTime)
 {
@@ -30,6 +38,12 @@ void Traffic::update(qreal deltaTime)
     }
 }
 
+void Traffic::validate()
+{
+    for (const auto& generator : generators_) generator.second->validate();
+    for (const auto& router : routers_) router.second->validate();
+}
+
 void Traffic::removeAgent(Agent *agent)
 {
     signalAgentRemoved(agent);
@@ -45,16 +59,6 @@ void Traffic::removeAgent(Agent *agent)
                                  {
                                      return a.get() == agent;
                                  }), agents_.end());
-}
-
-Intersection *Traffic::createIntersection(QPointF position)
-{
-    Intersection* intersection = network_->createIntersectionTopology(position);
-    controllers_.emplace(std::make_pair(intersection, std::make_unique<SignController>(intersection)));
-    routers_.emplace(std::make_pair(intersection, std::make_unique<IntersectionRouter>(intersection)));
-    generators_.emplace(std::make_pair(intersection, std::make_unique<FlowGenerator>(intersection)));
-    removedVehicleCounts_.emplace(std::make_pair(intersection, 0));
-    return intersection;
 }
 
 const IntersectionController *Traffic::controller(const Intersection *intersection) const
@@ -87,7 +91,7 @@ FlowGenerator *Traffic::generator(const Intersection *intersection)
     return (it != generators_.end()) ? it->second.get() : nullptr;
 }
 
-int Traffic::getRemovedVehicleCount(const Intersection *intersection) const
+int Traffic::removedVehicleCount(const Intersection *intersection) const
 {
     auto it = removedVehicleCounts_.find(intersection);
     if (it != removedVehicleCounts_.end())
@@ -115,6 +119,33 @@ const Vehicle* Traffic::findLeadVehicle(const Agent *agent) const
         }
     }
     return static_cast<const Vehicle*>(leadVehicle);
+}
+
+void Traffic::populateIntersection(Intersection *intersection)
+{
+    int roads = intersection->roads().size();
+    if (roads > 1)
+    {
+        controllers_.emplace(std::make_pair(intersection, std::make_unique<SignController>(intersection)));
+        routers_.emplace(std::make_pair(intersection, std::make_unique<IntersectionRouter>(intersection)));
+    }
+    else if (roads == 1)
+    {
+        for (const auto& roadway : intersection->roads()[0]->roadways())
+        {
+            if (roadway->source() == intersection)
+                generators_.emplace(std::make_pair(intersection, std::make_unique<FlowGenerator>(intersection)));
+
+            if (roadway->destination() == intersection)
+                removedVehicleCounts_.emplace(std::make_pair(intersection, 0));
+        }
+    }
+    else
+    {
+        qDebug() << "Intersection " << this << " at "
+                 << intersection->position().x() << ", "
+                 << intersection->position().y() << " has no connecting topology.";
+    }
 }
 
 void Traffic::signalAgentAdded(const Agent* agent) {

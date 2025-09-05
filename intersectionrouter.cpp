@@ -2,6 +2,7 @@
 #include "road.h"
 #include "intersection.h"
 #include <chrono>
+#include <QDebug>
 
 
 
@@ -26,11 +27,13 @@ void IntersectionRouter::addRoadwayFlows(const Roadway *from, std::vector<Roadwa
 
 const Roadway *IntersectionRouter::route(const Roadway *from) const
 {
-    auto it = routeFlows_.find(from);
-    if (it == routeFlows_.end() || it->second.empty())
-        return nullptr;
+    // auto it = routeFlows_.find(from);
+    // if (it == routeFlows_.end() || it->second.empty())
+    //     return nullptr;
 
-    const auto& flows = it->second;
+    // const auto& flows = it->second;
+
+    const auto& flows = roadwayFlows(from); // new line
 
     std::vector<int> weights;
     weights.reserve(flows.size());
@@ -52,13 +55,23 @@ const std::vector<RoadwayFlow> IntersectionRouter::roadwayFlows(const Roadway *f
 
 void IntersectionRouter::validate() const
 {
-    // checks whether all incoming roadways have a set of flows (flows themselves might be incomplete eg. not include every roadway at an intersection)
-    for (const auto& road : intersection_->roads())
-    {
-        if (intersection_->roads().size() <= 1) continue; // this is a dead end, no routing needed as it's the end of the route and vehicle will be marked for deletion.
+    auto adjacency = intersection_->roadwayAdjacency();
 
-        if (auto incomingRoadway = road->roadway(intersection_))
-            if (!routeFlows_.contains(incomingRoadway))
-                throw std::runtime_error("Tried to simulate an intersection without a route distribution for every incoming roadway.");
+    for (const auto& [fromRoad, flows] : routeFlows_)
+    {
+        // 1. Check flows sum
+        int totalFlow = 0;
+        for (auto& f : flows) {
+            totalFlow += f.flow;
+
+            // 2. Check connectivity
+            if (!adjacency[fromRoad].count(f.roadway)) {
+                qDebug() << "Router: no flow set from " << fromRoad << " to " << f.roadway << ".";
+            }
+        }
+
+        if (totalFlow <= 0) {
+            qDebug() << "Router: total flow is 0 from roadway" << fromRoad;
+        }
     }
 }

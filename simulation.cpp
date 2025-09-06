@@ -30,9 +30,9 @@ void Simulation::initialize()
     r4->createRoadways();
     r5->createRoadways();
 
-    r3->roadwayInto(is1)->priority(PriorityType::Priority);
-    r5->roadwayInto(is1)->priority(PriorityType::Priority);
-    r4->roadwayInto(is1)->priority(PriorityType::Stop);
+    r4->roadwayInto(is1)->priority(PriorityType::Priority);
+    r2->roadwayInto(is1)->priority(PriorityType::Priority);
+    r3->roadwayInto(is1)->priority(PriorityType::Stop);
 
     r3->geometry().addPoint({30, -6}, 1);
     r3->geometry().pointAt(0).medianWidth(4.0);
@@ -42,21 +42,18 @@ void Simulation::initialize()
     r3->geometry().addPoint({120, -42}, 4);
     r3->geometry().addPoint({140, -46}, 5);
 
-    is1->createConnection(r2, r3)->sourceOffset(2.0);
+    is1->createConnection(r2, r3);
     is1->createConnection(r2, r4);
-    auto c32 = is1->createConnection(r2, r5);
-    is1->createConnection(r3, r2);
+    is1->createConnection(r2, r5);
+    is1->createConnection(r3, r2)->destinationOffset(3.0);
     is1->createConnection(r3, r4);
     is1->createConnection(r3, r5);
     is1->createConnection(r4, r2)->destinationOffset(1.0);
     is1->createConnection(r4, r3);
-    is1->createConnection(r4, r5);
+    is1->createConnection(r4, r5)->sourceOffset(1.0);
     is1->createConnection(r5, r2);
     is1->createConnection(r5, r3);
     is1->createConnection(r5, r4);
-
-    c32->stopLineOffset(3.0);
-    c32->destinationOffset(3.0);
 
     is1->conflictManager()->recalculate();
 
@@ -72,9 +69,9 @@ void Simulation::initialize()
     is1Router->addRoadwayFlows(r5->roadwayInto(is1), {{r2->roadwayOutOf(is1), 1}, {r3->roadwayOutOf(is1), 1}, {r4->roadwayOutOf(is1), 1}});
 
     traffic_->generator(is2)->flow(200.0);
-    traffic_->generator(is3)->flow(400.0);
-    traffic_->generator(is4)->flow(200.0);
-    traffic_->generator(is5)->flow(600.0);
+    traffic_->generator(is3)->flow(200.0);
+    traffic_->generator(is4)->flow(150.0);
+    traffic_->generator(is5)->flow(200.0);
 
     traffic_->validate();
 

@@ -1,4 +1,4 @@
-#include "intersectionrouter.h"
+#include "flowrouter.h"
 #include "road.h"
 #include "intersection.h"
 #include <chrono>
@@ -6,12 +6,12 @@
 
 
 
-IntersectionRouter::IntersectionRouter(const Intersection *intersection)
+FlowRouter::FlowRouter(const Intersection *intersection)
     : rng_(std::chrono::high_resolution_clock::now().time_since_epoch().count())
     , intersection_{ intersection }
 {}
 
-void IntersectionRouter::addRoadwayFlows(const Roadway *from, std::vector<RoadwayFlow> flowsTo)
+void FlowRouter::addRoadwayFlows(const Roadway *from, std::vector<RoadwayFlow> flowsTo)
 {
     if (from->destination() != intersection_)
         throw std::invalid_argument("Tried to pass a roadway which doesn't lead to router's intersection.");
@@ -25,7 +25,7 @@ void IntersectionRouter::addRoadwayFlows(const Roadway *from, std::vector<Roadwa
     routeFlows_.try_emplace(from, flowsTo);
 }
 
-const Roadway *IntersectionRouter::route(const Roadway *from) const
+const Roadway *FlowRouter::route(const Roadway *from) const
 {
     auto it = routeFlows_.find(from);
     if (it == routeFlows_.end() || it->second.empty())
@@ -46,14 +46,14 @@ const Roadway *IntersectionRouter::route(const Roadway *from) const
     return flows[idx].roadway;
 }
 
-const std::vector<RoadwayFlow> IntersectionRouter::roadwayFlows(const Roadway *from) const
+const std::vector<RoadwayFlow> FlowRouter::roadwayFlows(const Roadway *from) const
 {
     auto it = routeFlows_.find(from);
     if (it != routeFlows_.end()) return it->second;
     else return {};
 }
 
-void IntersectionRouter::validate() const
+void FlowRouter::validate() const
 {
     auto adjacency = intersection_->roadwayAdjacency();
 

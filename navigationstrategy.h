@@ -31,22 +31,20 @@ public:
 
     virtual ~NavigationStrategy() = default;
     virtual const Traversable* next() const = 0;
-    qreal distanceToStop() const;
+    qreal distanceToStop();
 
 protected:
     virtual qreal distanceToStopLine() = 0;
-    virtual bool canSafelyProceed(const std::vector<ConflictData>& conflicts) const = 0;
+    virtual bool canSafelyProceed(const std::vector<ConflictData>& conflicts) = 0;
     virtual const std::vector<ConflictData> conflictsMustYieldTo() const = 0;
     virtual qreal calculateDistanceToStopLine() const = 0;
-
-private:
-    qreal timeToReach(qreal distance) const;
 };
 
 // Lane-specific navigation
 class LaneNavigationStrategy : public NavigationStrategy {
     const Lane* lane_;
     const Roadway* designatedNextRoadway_;
+    bool hasStopObligation_;
 
 public:
     explicit LaneNavigationStrategy(Vehicle* vehicle, const Traffic* traffic, const GeometryManager* geometry, const Lane* lane);
@@ -55,7 +53,7 @@ public:
 
 protected:
     qreal distanceToStopLine() override;
-    bool canSafelyProceed(const std::vector<ConflictData>& conflicts) const override;
+    bool canSafelyProceed(const std::vector<ConflictData>& conflicts) override;
     const std::vector<ConflictData> conflictsMustYieldTo() const override;
     qreal calculateDistanceToStopLine() const override;
 
@@ -76,7 +74,7 @@ public:
 
 protected:
     qreal distanceToStopLine() override;
-    bool canSafelyProceed(const std::vector<ConflictData>& conflicts) const override;
+    bool canSafelyProceed(const std::vector<ConflictData>& conflicts) override;
     const std::vector<ConflictData> conflictsMustYieldTo() const override;
     qreal calculateDistanceToStopLine() const override;
 

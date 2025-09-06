@@ -109,10 +109,21 @@ void Renderer::drawConflicts(const Intersection *intersection) const
         else if (cp->classify() == ConflictPoint::ConflictType::Merging) cpPen.setColor(Qt::magenta);
         else cpPen.setColor(Qt::gray);
 
-        QRectF rect(cp->position().x() - cpSize / 2, cp->position().y() - cpSize / 2, cpSize, cpSize);
+        const QPointF& pos = cp->position();
+        QRectF rect(pos.x() - cpSize / 2, pos.y() - cpSize / 2, cpSize, cpSize);
         auto ellipse = new QGraphicsEllipseItem(rect);
         ellipse->setPen(cpPen);
         staticLayer_->addToGroup(ellipse);
+
+        QString coordText = QString::asprintf("%.3f, %.3f", pos.x(), pos.y());
+        QFont font;
+        font.setPointSizeF(0.5);
+
+        auto textItem = new QGraphicsTextItem(coordText);
+        textItem->setFont(font);
+        textItem->setPos(pos - QPointF{4.0, 4.0});
+        textItem->setDefaultTextColor(Qt::red);
+        staticLayer_->addToGroup(textItem);
     }
 }
 
@@ -176,7 +187,7 @@ void Renderer::drawStaticElementsDebug(const RoadNetwork *network)
 {
     auto geometry = network->geometry();
     qreal intersectionSize = 25.0;
-    QPen connectionPen(Qt::white, 0.25);
+    QPen connectionPen(Qt::gray, 0.25);
 
     for (const auto& intersection : network->intersections())
     {

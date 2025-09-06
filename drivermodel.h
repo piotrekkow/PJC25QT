@@ -10,7 +10,8 @@ enum class DriverAction
     Stopping,
     Proceeding,
     Following,
-    Queueing
+    Queueing,
+    Stopped
 };
 
 class DriverModel

@@ -6,7 +6,7 @@
 #include "vehicle.h"
 #include <qdebug.h>
 
-qreal NavigationStrategy::distanceToStop() const
+qreal NavigationStrategy::distanceToStop()
 {
     auto conflicts = conflictsMustYieldTo();
     if (canSafelyProceed(conflicts)) {
@@ -20,13 +20,11 @@ LaneNavigationStrategy::LaneNavigationStrategy(Vehicle *vehicle, const Traffic *
     : NavigationStrategy(vehicle, traffic, geometry), lane_{ lane }
 {
     if (auto nextRouter = traffic_->router(lane_->intersection()))
-    {
         designatedNextRoadway_ = nextRouter->route(lane_->roadway());
-    }
     else
-    {
         designatedNextRoadway_ = nullptr;
-    }
+
+    hasStopObligation_ = lane_->regulatoryPriority() == PriorityType::Stop;
 }
 
 const Traversable *LaneNavigationStrategy::next() const
@@ -41,8 +39,16 @@ qreal LaneNavigationStrategy::distanceToStopLine()
                   : std::numeric_limits<qreal>::max();
 }
 
-bool LaneNavigationStrategy::canSafelyProceed(const std::vector<ConflictData> &conflicts) const
+bool LaneNavigationStrategy::canSafelyProceed(const std::vector<ConflictData> &conflicts)
 {
+    if (hasStopObligation_)
+    {
+        if (vehicle_->debugAction() == DriverAction::Stopped)
+            hasStopObligation_ = false;
+        else
+            return false;
+    }
+
     for (const auto& conflict : conflicts)
     {
         qreal conflictDistance = distanceToConflict(conflict.point);
@@ -108,7 +114,7 @@ qreal ConnectionNavigationStrategy::distanceToStopLine()
     return connection_->stopLineOffset() - vehicle_->progress();
 }
 
-bool ConnectionNavigationStrategy::canSafelyProceed(const std::vector<ConflictData> &conflicts) const
+bool ConnectionNavigationStrategy::canSafelyProceed(const std::vector<ConflictData> &conflicts)
 {
     for (const auto& conflict : conflicts)
     {

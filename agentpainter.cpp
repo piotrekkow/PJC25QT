@@ -76,6 +76,9 @@ void VehiclePainter::update(const Agent* agent)
         case DriverAction::Queueing:
             debugActionS = "Queueing";
             break;
+        case DriverAction::Stopped:
+            debugActionS = "Stopped";
+            break;
         default:
             debugActionS = "Unknown";
             break;

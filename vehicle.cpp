@@ -24,20 +24,11 @@ void Vehicle::applyPhysics(qreal deltaTime)
 {
     speed_ += acceleration_ * deltaTime;
 
-    // const qreal stoppingSpeedThreshold = 0.1;
-
-    // if ((driver_->action() == DriverAction::Stopping || driver_->action() == DriverAction::Queueing) && speed_ < stoppingSpeedThreshold)
-    // {
-    //     speed_ = 0.0;
-    //     acceleration_ = 0.0;
-    // }
-
     if (speed_ < 0.5 && acceleration_ < 0)
     {
         speed_ = 0.0;
         acceleration_ = 0.0;
         driver_->reset();
-
     }
 
     Agent::applyPhysics(deltaTime);
@@ -79,8 +70,6 @@ const Vehicle *Vehicle::getLeadVehicle() const
 
 qreal Vehicle::timeToReach(qreal distance)
 {
-    // if (std::abs(acceleration_) < 0.1) return (speed_ > 0) ? distance / speed_ : std::numeric_limits<qreal>::max();
-
     qreal accelDistance = (cruiseSpeed_ * cruiseSpeed_ - speed_ * speed_) / (2 * maxAcceleration_); // from stop at a=1.8 and v_cruise=13.8 => 52.9m
 
     if (accelDistance > distance)

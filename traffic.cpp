@@ -61,19 +61,19 @@ void Traffic::removeAgent(Agent *agent)
                                  }), agents_.end());
 }
 
-const IntersectionController *Traffic::controller(const Intersection *intersection) const
+const FlowController *Traffic::controller(const Intersection *intersection) const
 {
     auto it = controllers_.find(intersection);
     return (it != controllers_.end()) ? it->second.get() : nullptr;
 }
 
-const IntersectionRouter *Traffic::router(const Intersection *intersection) const
+const FlowRouter *Traffic::router(const Intersection *intersection) const
 {
     auto it = routers_.find(intersection);
     return (it != routers_.end()) ? it->second.get() : nullptr;
 }
 
-IntersectionRouter *Traffic::router(const Intersection *intersection)
+FlowRouter *Traffic::router(const Intersection *intersection)
 {
     auto it = routers_.find(intersection);
     return (it != routers_.end()) ? it->second.get() : nullptr;
@@ -127,7 +127,7 @@ void Traffic::populateIntersection(Intersection *intersection)
     if (roads > 1)
     {
         controllers_.emplace(std::make_pair(intersection, std::make_unique<SignController>(intersection)));
-        routers_.emplace(std::make_pair(intersection, std::make_unique<IntersectionRouter>(intersection)));
+        routers_.emplace(std::make_pair(intersection, std::make_unique<FlowRouter>(intersection)));
     }
     else if (roads == 1)
     {

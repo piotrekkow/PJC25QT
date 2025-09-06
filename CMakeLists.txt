@@ -86,11 +86,11 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
 
         agent.h agent.cpp
         pidcontroller.h pidcontroller.cpp
-        intersectionrouter.h intersectionrouter.cpp
+        flowrouter.h flowrouter.cpp
         pedestrian.h pedestrian.cpp
         flowgenerator.h flowgenerator.cpp
         navigationstrategy.h navigationstrategy.cpp
-        intersectioncontroller.h intersectioncontroller.cpp
+        flowcontroller.h flowcontroller.cpp
         alignedtextitem.h alignedtextitem.cpp
         agentpainter.h agentpainter.cpp
         trafficobserver.h

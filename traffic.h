@@ -1,8 +1,8 @@
 #pragma once
 
 #include "agent.h"
-#include "intersectioncontroller.h"
-#include "intersectionrouter.h"
+#include "flowcontroller.h"
+#include "flowrouter.h"
 #include "flowgenerator.h"
 #include "trafficobserver.h"
 #include <memory>
@@ -13,8 +13,8 @@ class RoadNetwork;
 class Traffic
 {
     std::vector<std::unique_ptr<Agent>> agents_;
-    std::unordered_map<const Intersection*, std::unique_ptr<IntersectionController>> controllers_;
-    std::unordered_map<const Intersection*, std::unique_ptr<IntersectionRouter>> routers_;
+    std::unordered_map<const Intersection*, std::unique_ptr<FlowController>> controllers_;
+    std::unordered_map<const Intersection*, std::unique_ptr<FlowRouter>> routers_;
     std::unordered_map<const Intersection*, std::unique_ptr<FlowGenerator>> generators_;
     std::unordered_map<const Intersection*, int> removedVehicleCounts_;
 
@@ -48,9 +48,9 @@ public:
 
     // Intersection* createIntersection(QPointF position);
 
-    const IntersectionController* controller(const Intersection* intersection) const;
-    const IntersectionRouter* router(const Intersection* intersection) const;
-    IntersectionRouter* router(const Intersection* intersection);
+    const FlowController* controller(const Intersection* intersection) const;
+    const FlowRouter* router(const Intersection* intersection) const;
+    FlowRouter* router(const Intersection* intersection);
     const FlowGenerator *generator(const Intersection *intersection) const;
     FlowGenerator* generator(const Intersection* intersection);
     int removedVehicleCount(const Intersection* intersection) const;

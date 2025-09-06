@@ -22,6 +22,8 @@ public:
 
     void sourceOffset(qreal offset) { sourceOffset_ = offset; }
     void destinationOffset(qreal offset) { destinationOffset_ = offset; }
+
+    // TODO: Queueing behind vehicle at different traversable, until then stopLineOffset will break logic for queueing vehicles
     void stopLineOffset(qreal offset) { stopLineOffset_ = offset; }
 
     const QPainterPath& path(const GeometryManager* geometryManager) const override;

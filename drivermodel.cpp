@@ -68,8 +68,8 @@ qreal DefaultDriver::desiredAcceleration(const Vehicle *vehicle, DecisionContext
             setpoint = bufferedSafeSpeed * (1.0 - smooth_t);
         }
 
-        // setpoint = (vehicle->speed() < safeSpeed) ? safeSpeed
-        //                                           : 0.0;
+        if (action_ == DriverAction::Stopping && vehicle->speed() < 0.5)
+            action_ = DriverAction::Stopped;
 
         reqAccel = controller_.update(setpoint, vehicle->speed(), deltaTime);
     }

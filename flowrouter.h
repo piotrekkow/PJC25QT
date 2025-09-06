@@ -12,14 +12,14 @@ struct RoadwayFlow
     int flow;
 };
 
-class IntersectionRouter
+class FlowRouter
 {
     std::unordered_map<const Roadway*, std::vector<RoadwayFlow>> routeFlows_;
     mutable std::mt19937 rng_;  // mutable because next() is const
     const Intersection* intersection_;
 
 public:
-    IntersectionRouter(const Intersection* intersection);
+    FlowRouter(const Intersection* intersection);
 
     void addRoadwayFlows(const Roadway* from, std::vector<RoadwayFlow> flowsTo);
 

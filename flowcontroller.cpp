@@ -1,9 +1,9 @@
-#include "intersectioncontroller.h"
+#include "flowcontroller.h"
 #include "ConflictData.h"
 #include "intersection.h"
 #include "agent.h"
 #include "lane.h"
-// #include "DebugHelpers.h"
+#include "DebugHelpers.h"
 
 std::vector<ConflictData> SignController::conflictsMustYieldTo(const Connection *conn, const std::vector<std::unique_ptr<Agent> > &agents, const GeometryManager* geometry) const
 {
@@ -18,6 +18,8 @@ std::vector<ConflictData> SignController::conflictsMustYieldTo(const Connection 
         for (const auto& agent : agents)
         {
             const auto* traversable = agent->traversable();
+            if (traversable == conn->source() || traversable == conn) continue;
+
             const auto* priorityConn = cp->priorityConnection();
 
             // filter irrelevant vehicles (not on conflict connection or approaching lane)
@@ -34,11 +36,11 @@ std::vector<ConflictData> SignController::conflictsMustYieldTo(const Connection 
         if (!foundAgents.empty()) conflictsToResolve.emplace_back(ConflictData{cp, foundAgents});
     }
 
-    // qDebug() << "decisionData:" << conflictsToResolve;
+    qDebug() << "decisionData:" << conflictsToResolve;
     return conflictsToResolve;
 }
 
-bool IntersectionController::weHavePriorityInConflict(const Connection *us, const ConflictPoint *cp) const
+bool FlowController::weHavePriorityInConflict(const Connection *us, const ConflictPoint *cp) const
 {
     // consider relative regulatory (sign) priority based on whether we have right-hand rule priority
     return (cp->isRHPriority(us)) ? us->regulatoryPriority() >= cp->yieldConnection()->regulatoryPriority()

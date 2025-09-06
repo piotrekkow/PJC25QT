@@ -24,12 +24,14 @@ protected:
     const qreal comfDecel_;   // - m/s^2
 
     DriverAction action_;
+    PIDController controller_;
 
 public:
     virtual ~DriverModel() = default;
-    virtual qreal desiredAcceleration(const Vehicle* vehicle, DecisionContext context, qreal deltaTime) = 0;
+    qreal desiredAcceleration(const Vehicle* vehicle, DecisionContext context, qreal deltaTime);
+
     DriverAction action() const { return action_; }
-    virtual void reset() = 0;
+    void reset() { controller_.reset(); }
 
 protected:
     DriverModel(qreal minTimeGap, qreal minDistanceGap, qreal comfAccel, qreal comfDecel)
@@ -37,24 +39,25 @@ protected:
         , minDistanceGap_{ minDistanceGap }
         , comfAccel_{ comfAccel }
         , comfDecel_{ comfDecel }
-    {}
-
-    virtual qreal decisionDistance(const Vehicle* vehicle, DecisionContext& context) const = 0;
-};
-
-class DefaultDriver : public DriverModel
-{
-    PIDController controller_;
-
-public:
-    DefaultDriver()
-        : DriverModel(2.0, 1.5, 1.8, 2.0)
         , controller_{1.0, 0.0, 0.0}
     {}
 
-    qreal desiredAcceleration(const Vehicle* vehicle, DecisionContext context, qreal deltaTime) override;
-    void reset() override { controller_.reset(); }
+    virtual qreal stoppingAcceleration(const Vehicle* vehicle, DecisionContext& context, qreal deltaTime);
+    virtual qreal queueingAcceleration(const Vehicle* vehicle, DecisionContext& context, qreal deltaTime);
+    virtual qreal followingAcceleration(const Vehicle* vehicle, DecisionContext& context, qreal deltaTime);
+    virtual qreal proceedingAcceleration(const Vehicle* vehicle, DecisionContext& context, qreal deltaTime);
 
-protected:
-    qreal decisionDistance(const Vehicle* vehicle, DecisionContext& context) const override;
+    // Decision-making methods
+    virtual qreal decisionDistance(const Vehicle* vehicle, DecisionContext& context) const;
+    virtual bool shouldStopAtIntersection(const Vehicle* vehicle, DecisionContext& context) const;
+    virtual bool shouldFollowVehicle(const Vehicle* vehicle, DecisionContext& context) const;
+    virtual bool shouldQueueBehindVehicle(const Vehicle* vehicle, DecisionContext& context) const;
+};
+
+class AverageDriver : public DriverModel
+{
+public:
+    AverageDriver()
+        : DriverModel(2.0, 1.5, 2.0, 2.0)
+    {}
 };

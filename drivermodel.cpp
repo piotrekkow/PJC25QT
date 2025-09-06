@@ -1,116 +1,135 @@
 #include "drivermodel.h"
 #include "vehicle.h"
 
-qreal DefaultDriver::desiredAcceleration(const Vehicle *vehicle, DecisionContext context, qreal deltaTime)
+qreal DriverModel::desiredAcceleration(const Vehicle* vehicle, DecisionContext context, qreal deltaTime)
 {
-    qreal reqAccel = 0.0;
-    qreal setpoint = 0.0;
+    bool stopAtIntersection = shouldStopAtIntersection(vehicle, context);
+    bool followBehind = shouldFollowVehicle(vehicle, context);
+    bool queueBehind = shouldQueueBehindVehicle(vehicle, context);
 
-    bool stopAtIntersection = context.distanceToStop < decisionDistance(vehicle, context);
-    bool followBehindVehicle = false;
-    bool queueBehindVehicle = false;
-
-    if (auto& lead = context.leadVehicle)
+    if (stopAtIntersection || queueBehind)
     {
-        qreal relativeDistance = lead->progress() - lead->length() - vehicle->progress();
-        followBehindVehicle = relativeDistance < decisionDistance(vehicle, context);
-
-        if (followBehindVehicle)
-        {
-            queueBehindVehicle = lead->speed() < 0.25 * context.speedLimit;
-        }
-    }
-
-    // Priority 1: Must stop at an intersection or behind vehicle
-
-    if (stopAtIntersection || queueBehindVehicle)
-    {
-        qreal effectiveStopDistance = context.distanceToStop - minDistanceGap_;
-
-        if (auto& lead = context.leadVehicle)
-        {
-            qreal posLeadVehicleRear = lead->progress() - lead->length();
-            qreal distanceToLeadRear = posLeadVehicleRear - vehicle->progress();
-
-            if (distanceToLeadRear < effectiveStopDistance)
-            {
-                effectiveStopDistance = distanceToLeadRear - minDistanceGap_;
-            }
-        }
-
-        // qreal kp = (effectiveStopDistance > 0.1) ? 4 / effectiveStopDistance + 1
-        //                                          : 40.0;
-
-        qreal kp = 5.0;
-
-        controller_.gains(kp, 0.0, 0.0);
-        action_ = (queueBehindVehicle) ? DriverAction::Queueing
-                                       : DriverAction::Stopping;
-
-        qreal stopDistanceBuffer = vehicle->speed() * 0.0;
-        // qreal safeSpeed = std::sqrt(2.0 * std::max(0.0, effectiveStopDistance - stopDistanceBuffer) * comfDecel_);
-
-        qreal responseBuffer = vehicle->speed() * 0.3; // Adjust based on your controller response time
-        qreal bufferedSafeSpeed = std::sqrt(2.0 * std::max(0.0, effectiveStopDistance - stopDistanceBuffer - responseBuffer) * comfDecel_);
-
-        // Smooth transition zone
-        qreal transitionRange = 2.0; // m/s transition range
-        qreal speedDiff = vehicle->speed() - bufferedSafeSpeed;
-
-        if (speedDiff <= 0) {
-            setpoint = bufferedSafeSpeed;
-        } else if (speedDiff >= transitionRange) {
-            setpoint = 0.0;
-        } else {
-            // Smooth cubic interpolation in transition zone
-            qreal t = speedDiff / transitionRange;
-            qreal smooth_t = t * t * (3.0 - 2.0 * t); // Smoothstep function
-            setpoint = bufferedSafeSpeed * (1.0 - smooth_t);
-        }
+        action_ = queueBehind ? DriverAction::Queueing : DriverAction::Stopping;
 
         if (action_ == DriverAction::Stopping && vehicle->speed() < 0.5)
             action_ = DriverAction::Stopped;
 
-        reqAccel = controller_.update(setpoint, vehicle->speed(), deltaTime);
+        return queueBehind ? queueingAcceleration(vehicle, context, deltaTime)
+                           : stoppingAcceleration(vehicle, context, deltaTime);
     }
-    // Priority 2: should follow a vehicle
-    else if (followBehindVehicle)
+    else if (followBehind)
     {
-        auto lead = context.leadVehicle;
-        qreal relativeDistance = lead->progress() - lead->length() - vehicle->progress();
-
-        if (relativeDistance < decisionDistance(vehicle, context))
-        {
-            qreal relativeSpeed = vehicle->speed() - lead->speed();
-
-            // Using the Intelligent Driver Model (IDM) formula for safe distance
-            qreal safeDistance = minDistanceGap_ + std::max(0.0, vehicle->speed() * minTimeGap_ + (vehicle->speed() * relativeSpeed) / (2 * std::sqrt(comfAccel_ * comfDecel_)));
-
-            controller_.gains(1.0, 0.05, 0.2);
-            action_ = DriverAction::Following;
-
-            setpoint = (relativeDistance > safeDistance) ? context.speedLimit
-                                                         : lead->speed();
-
-            reqAccel = controller_.update(setpoint, vehicle->speed(), deltaTime);
-        }
+        action_ = DriverAction::Following;
+        return followingAcceleration(vehicle, context, deltaTime);
     }
-    // Priority 3: cruise
     else
     {
-        controller_.gains(1.0, 0.05, 0.7);
         action_ = DriverAction::Proceeding;
-        setpoint = context.speedLimit;
-        reqAccel = controller_.update(setpoint, vehicle->speed(), deltaTime);
+        return proceedingAcceleration(vehicle, context, deltaTime);
     }
-
-    return reqAccel;
 }
 
-qreal DefaultDriver::decisionDistance(const Vehicle* vehicle, DecisionContext &context) const
+qreal DriverModel::stoppingAcceleration(const Vehicle *vehicle, DecisionContext &context, qreal deltaTime)
+{
+    qreal effectiveStopDistance = context.distanceToStop - minDistanceGap_;
+
+    if (auto& lead = context.leadVehicle)
+    {
+        qreal posLeadVehicleRear = lead->progress() - lead->length();
+        qreal distanceToLeadRear = posLeadVehicleRear - vehicle->progress();
+
+        if (distanceToLeadRear < effectiveStopDistance)
+        {
+            effectiveStopDistance = distanceToLeadRear - minDistanceGap_;
+        }
+    }
+
+    qreal kp = 5.0;
+    controller_.gains(kp, 0.0, 0.0);
+
+    qreal stopDistanceBuffer = vehicle->speed() * 0.0;
+    // qreal safeSpeed = std::sqrt(2.0 * std::max(0.0, effectiveStopDistance - stopDistanceBuffer) * comfDecel_);
+
+    qreal responseBuffer = vehicle->speed() * 0.3;
+    qreal bufferedSafeSpeed = std::sqrt(2.0 * std::max(0.0, effectiveStopDistance - stopDistanceBuffer - responseBuffer) * comfDecel_);
+
+    qreal transitionRange = 2.0;
+    qreal speedDiff = vehicle->speed() - bufferedSafeSpeed;
+
+    qreal setpoint;
+    if (speedDiff <= 0)
+    {
+        setpoint = bufferedSafeSpeed;
+    }
+    else if (speedDiff >= transitionRange)
+    {
+        setpoint = 0.0;
+    }
+    else
+    {
+        qreal t = speedDiff / transitionRange;
+        qreal smooth_t = t * t * (3.0 - 2.0 * t);
+        setpoint = bufferedSafeSpeed * (1.0 - smooth_t);
+    }
+
+    return controller_.update(setpoint, vehicle->speed(), deltaTime);
+}
+
+qreal DriverModel::queueingAcceleration(const Vehicle *vehicle, DecisionContext &context, qreal deltaTime)
+{
+    return stoppingAcceleration(vehicle, context, deltaTime);
+}
+
+qreal DriverModel::followingAcceleration(const Vehicle *vehicle, DecisionContext &context, qreal deltaTime)
+{
+    auto lead = context.leadVehicle;
+    qreal relativeDistance = lead->progress() - lead->length() - vehicle->progress();
+    qreal relativeSpeed = vehicle->speed() - lead->speed();
+
+    // Using the Intelligent Driver Model (IDM) formula for safe distance
+    qreal safeDistance = minDistanceGap_ + std::max(0.0, vehicle->speed() * minTimeGap_ + (vehicle->speed() * relativeSpeed) / (2 * std::sqrt(comfAccel_ * comfDecel_)));
+    controller_.gains(1.0, 0.05, 0.2);
+    qreal setpoint = (relativeDistance > safeDistance) ? context.speedLimit
+                                                 : lead->speed();
+
+    return controller_.update(setpoint, vehicle->speed(), deltaTime);
+}
+
+qreal DriverModel::proceedingAcceleration(const Vehicle *vehicle, DecisionContext &context, qreal deltaTime)
+{
+    controller_.gains(1.0, 0.05, 0.7);
+    qreal setpoint = context.speedLimit;
+    return controller_.update(setpoint, vehicle->speed(), deltaTime);
+}
+
+qreal DriverModel::decisionDistance(const Vehicle *vehicle, DecisionContext &context) const
 {
     Q_UNUSED(context);
 
     // allows for a very comfortable margin for stopping at 1/2 comfDeceleration_, reasonable substitute for infinity
     return (vehicle->speed() * vehicle->speed() / comfDecel_) + 2 * minDistanceGap_;
+}
+
+bool DriverModel::shouldStopAtIntersection(const Vehicle *vehicle, DecisionContext &context) const
+{
+    return context.distanceToStop < decisionDistance(vehicle, context);
+}
+
+bool DriverModel::shouldFollowVehicle(const Vehicle *vehicle, DecisionContext &context) const
+{
+    if (!context.leadVehicle) return false;
+
+    auto lead = context.leadVehicle;
+    qreal relativeDistance = lead->progress() - lead->length() - vehicle->progress();
+    return relativeDistance < decisionDistance(vehicle, context);
+}
+
+bool DriverModel::shouldQueueBehindVehicle(const Vehicle *vehicle, DecisionContext &context) const
+{
+    if (shouldFollowVehicle(vehicle, context))
+    {
+        return context.leadVehicle->speed() < 0.25 * context.speedLimit;
+    }
+    else
+        return false;
 }

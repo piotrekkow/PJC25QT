@@ -8,25 +8,21 @@ class GeometryManager;
 
 class Agent
 {
-
-    bool markedForRemoval_;
+    bool markedForRemoval_; // reached end of route and is marked to be removed
 
 protected:
-    const Traversable* traversable_;
-    std::unique_ptr<NavigationStrategy> navigationStrategy_;
+    const Traversable* traversable_;    // topology an agent is currently traveling on
+    std::unique_ptr<NavigationStrategy> navigationStrategy_;    // navigation rules of topology
 
-    qreal progress_;    // progress along traversable
-    qreal speed_;
-    QPointF position_;
-    qreal angle_;
-    const qreal length_;
-    const qreal width_;
+    qreal progress_;        // progress along traversable in m
+    qreal speed_;           // m/s
+    QPointF position_;      // center of vehicle {m, m}
+    qreal angle_;           // deg
+    const qreal length_;    // m
+    const qreal width_;     // m
 
     const Traffic* traffic_;
     const GeometryManager* geometry_;
-
-    bool canProceed_;
-
 
 public:
     virtual ~Agent() = default;

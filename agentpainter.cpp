@@ -62,7 +62,7 @@ void VehiclePainter::update(const Agent* agent)
 
         std::string debugActionS;
 
-        switch (vehicle->debugAction())
+        switch (vehicle->driverAction())
         {
         case DriverAction::Proceeding:
             debugActionS = "Proceeding";

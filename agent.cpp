@@ -13,7 +13,6 @@ Agent::Agent(const Traversable *traversable, const Traffic *traffic, const Geome
     , width_{ width }
     , traffic_{ traffic }
     , geometry_{ geometry }
-    , canProceed_{ false }
 {}
 
 void Agent::update(qreal deltaTime)
@@ -49,7 +48,6 @@ void Agent::applyPhysics(qreal deltaTime)
 
 void Agent::navigate()
 {
-
     if (progress_ >= traversable_->length(geometry_))
     {
         if (!traversable_ || markedForRemoval_) return;

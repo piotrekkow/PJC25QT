@@ -95,6 +95,7 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
         agentpainter.h agentpainter.cpp
         trafficobserver.h
         drivermodel.h drivermodel.cpp
+        aggressivedriver.h aggressivedriver.cpp
 
 
 

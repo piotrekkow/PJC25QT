@@ -1,4 +1,5 @@
 #include "vehicle.h"
+#include "aggressivedriver.h"
 #include "ConflictData.h"
 #include "lane.h"
 #include "geometrymanager.h"
@@ -10,7 +11,13 @@ Vehicle::Vehicle(Lane *initialLane, const Traffic *traffic, const GeometryManage
     , acceleration_{ 0.0 }
     , cruiseSpeed_{ initialLane->speedLimit() }
 {
-    driver_ = std::make_unique<DefaultDriver>();
+    static int aggressiveTrigger;
+    aggressiveTrigger++;
+
+    if (aggressiveTrigger % 4 == 0)
+        driver_ = std::make_unique<AggressiveDriver>();
+    else
+        driver_ = std::make_unique<AverageDriver>();
 }
 
 std::unique_ptr<Vehicle> Vehicle::create(Lane *initialLane, const Traffic *traffic, const GeometryManager *geometry)
@@ -60,12 +67,6 @@ void Vehicle::applyAccelerationLimits(qreal desiredAcceleration, qreal deltaTime
     reqAccelChange = std::clamp(reqAccelChange, -maxAccelChange, maxAccelChange);
     acceleration_ += reqAccelChange;
     acceleration_ = std::clamp(acceleration_, -maxDeceleration_, maxAcceleration_);
-}
-
-const Vehicle *Vehicle::getLeadVehicle() const
-{
-    const Agent* leadAgent = traffic_->findLeadVehicle(this);
-    return (leadAgent) ? static_cast<const Vehicle*>(leadAgent) : nullptr;
 }
 
 qreal Vehicle::timeToReach(qreal distance)

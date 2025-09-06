@@ -35,12 +35,17 @@ class Vehicle : public Agent
     std::unique_ptr<DriverModel> driver_;
 
 public:
-    static std::unique_ptr<Vehicle> create(Lane* initialLane, const Traffic* traffic, const GeometryManager *geometry);
+    /**
+     * @brief Factory function to create a new Vehicle.
+     * @note This is a static method and should be called as Vehicle::create(...), not on an existing instance.
+     */
+    [[nodiscard]] static std::unique_ptr<Vehicle> create(Lane* initialLane, const Traffic* traffic, const GeometryManager *geometry);
 
     qreal timeToReach(qreal distance);
+    DriverAction driverAction() const { return driver_->action(); }
+
     qreal acceleration() const { return acceleration_; } // ONLY FOR DEBUG
     qreal cruiseSpeed() const { return cruiseSpeed_; } // ONLY FOR DEBUG
-    DriverAction debugAction() const { return driver_->action(); } // ONLY FOR DEBUG
 
 protected:
     Vehicle(Lane* initialLane, const Traffic* traffic, const GeometryManager* geometry);
@@ -53,8 +58,6 @@ private:
     bool canSafelyProceed(std::vector<ConflictData> conflicts);
     qreal distanceToConflict(const ConflictPoint* cp) const;
     void applyAccelerationLimits(qreal desiredAcceleration, qreal deltaTime);
-
-    const Vehicle* getLeadVehicle() const;
 
     DecisionContext decisionContext() const;
 };

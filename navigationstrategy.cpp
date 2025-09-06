@@ -43,7 +43,7 @@ bool LaneNavigationStrategy::canSafelyProceed(const std::vector<ConflictData> &c
 {
     if (hasStopObligation_)
     {
-        if (vehicle_->debugAction() == DriverAction::Stopped)
+        if (vehicle_->driverAction() == DriverAction::Stopped)
             hasStopObligation_ = false;
         else
             return false;

@@ -12,15 +12,18 @@ ConflictGeometryCalculator::calculatePathIntersectionPoints(const QPainterPath& 
     auto segments2 = extractSegments(path2);
 
     qreal cumulative1 = 0.0;
-    for (const auto& seg1 : segments1) {
+    for (const auto& seg1 : segments1)
+    {
         qreal segLen1 = seg1->length();
 
         qreal cumulative2 = 0.0;
-        for (const auto& seg2 : segments2) {
+        for (const auto& seg2 : segments2)
+        {
             qreal segLen2 = seg2->length();
 
             auto pts = seg1->intersect(*seg2, tolerance);
-            for (const auto& p : pts) {
+            for (const auto& p : pts)
+            {
                 ConflictPointBlueprint cp;
                 cp.point = p;
                 cp.distanceAlongPath1 = cumulative1 + seg1->distanceToPoint(p);
@@ -37,57 +40,48 @@ ConflictGeometryCalculator::calculatePathIntersectionPoints(const QPainterPath& 
     return results;
 }
 
-/**
-* @brief Flattens a curve segment into a series of line segments (a polyline).
-* @param segment The curve segment to flatten.
-* @param steps The number of line segments to create.
-* @return A vector of points representing the polyline.
-*/
 std::vector<QPointF> ConflictGeometryCalculator::flattenSegment(const Segment &segment, int steps)
 {
     std::vector<QPointF> points;
     points.reserve(steps + 1);
-    for (int i = 0; i <= steps; ++i) {
+    for (int i = 0; i <= steps; ++i)
+    {
         qreal t = static_cast<qreal>(i) / steps;
         points.push_back(segment.evaluateAt(t));
     }
     return points;
 }
 
-/**
- * @brief Intersects two polylines.
- * @param poly1 The first polyline (vector of points).
- * @param poly2 The second polyline.
- * @param tol Tolerance for merging close intersection points.
- * @return A vector of unique intersection points.
- */
 std::vector<QPointF> ConflictGeometryCalculator::intersectPolylines(const std::vector<QPointF> &poly1, const std::vector<QPointF> &poly2, qreal tol)
 {
     std::vector<QPointF> intersections;
-    if (poly1.size() < 2 || poly2.size() < 2) {
+    if (poly1.size() < 2 || poly2.size() < 2)
+    {
         return intersections;
     }
 
-    for (size_t i = 0; i < poly1.size() - 1; ++i) {
+    for (size_t i = 0; i < poly1.size() - 1; ++i)
+    {
         QLineF line1(poly1[i], poly1[i+1]);
-        for (size_t j = 0; j < poly2.size() - 1; ++j) {
+        for (size_t j = 0; j < poly2.size() - 1; ++j)
+        {
             QLineF line2(poly2[j], poly2[j+1]);
             QPointF intersectionPoint;
 
-#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
-            if (line1.intersects(line2, &intersectionPoint) == QLineF::BoundedIntersection) {
-#else
-            if (line1.intersect(line2, &intersectionPoint) == QLineF::BoundedIntersection) {
-#endif
+            if (line1.intersects(line2, &intersectionPoint) == QLineF::BoundedIntersection)
+            {
                 // Check if this point is too close to an existing one
                 bool tooClose = false;
-                for (const auto& existingPoint : intersections) {
-                    if (QLineF(existingPoint, intersectionPoint).length() < tol) {
+                for (const auto& existingPoint : intersections)
+                {
+                    if (QLineF(existingPoint, intersectionPoint).length() < tol)
+                    {
                         tooClose = true;
                         break;
                     }
                 }
-                if (!tooClose) {
+                if (!tooClose)
+                {
                     intersections.push_back(intersectionPoint);
                 }
             }
@@ -104,11 +98,14 @@ std::vector<std::unique_ptr<ConflictGeometryCalculator::Segment> > ConflictGeome
         return segments;
 
     QPointF current = path.elementAt(0); // starting point
-    for (int i = 1; i < path.elementCount(); ++i) {
+    for (int i = 1; i < path.elementCount(); ++i)
+    {
         QPainterPath::Element elem = path.elementAt(i);
 
-        switch (elem.type) {
-        case QPainterPath::LineToElement: {
+        switch (elem.type)
+        {
+        case QPainterPath::LineToElement:
+        {
             QPointF p1 = current;
             QPointF p2(elem.x, elem.y);
             segments.push_back(std::make_unique<LineSegment>(p1, p2));
@@ -116,7 +113,8 @@ std::vector<std::unique_ptr<ConflictGeometryCalculator::Segment> > ConflictGeome
             break;
         }
 
-        case QPainterPath::CurveToElement: {
+        case QPainterPath::CurveToElement:
+        {
             // CurveToElement means cubic or quadratic.
             // Qt encodes as:
             //   CurveToElement     = first control point
@@ -130,7 +128,8 @@ std::vector<std::unique_ptr<ConflictGeometryCalculator::Segment> > ConflictGeome
             QPainterPath::Element elem2 = path.elementAt(i + 1);
 
             if (i + 2 < path.elementCount()
-                && path.elementAt(i + 2).type == QPainterPath::CurveToDataElement) {
+                && path.elementAt(i + 2).type == QPainterPath::CurveToDataElement)
+            {
                 // Cubic
                 QPointF p0 = current;
                 QPointF c1(elem1.x, elem1.y);
@@ -141,7 +140,8 @@ std::vector<std::unique_ptr<ConflictGeometryCalculator::Segment> > ConflictGeome
                 current = p3;
                 i += 2; // consumed three elements
             }
-            else {
+            else
+            {
                 // Quadratic (encoded as CurveToElement + CurveToDataElement)
                 QPointF p0 = current;
                 QPointF c(elem1.x, elem1.y);
@@ -208,12 +208,14 @@ qreal ConflictGeometryCalculator::QuadraticSegment::distanceToPoint(const QPoint
     qreal bestDist = std::numeric_limits<qreal>::max();
     qreal bestLen = 0.0;
 
-    for (int i = 1; i <= N; ++i) {
+    for (int i = 1; i <= N; ++i)
+    {
         qreal t = (qreal)i / N;
         QPointF curr = evaluateAt(t);
 
         qreal dist = QLineF(curr, p).length();
-        if (dist < bestDist) {
+        if (dist < bestDist)
+        {
             bestDist = dist;
             bestLen = lenSoFar + QLineF(prev, curr).length();
         }
@@ -239,7 +241,8 @@ qreal ConflictGeometryCalculator::CubicSegment::length() const
     const int N = 50;
     QPointF prev = p0;
     qreal len = 0.0;
-    for (int i = 1; i <= N; ++i) {
+    for (int i = 1; i <= N; ++i)
+    {
         qreal t = (qreal)i / N;
         QPointF curr = evaluateAt(t);
         len += QLineF(prev, curr).length();
@@ -256,12 +259,14 @@ qreal ConflictGeometryCalculator::CubicSegment::distanceToPoint(const QPointF &p
     qreal bestDist = std::numeric_limits<qreal>::max();
     qreal bestLen = 0.0;
 
-    for (int i = 1; i <= N; ++i) {
+    for (int i = 1; i <= N; ++i)
+    {
         qreal t = (qreal)i / N;
         QPointF curr = evaluateAt(t);
 
         qreal dist = QLineF(curr, p).length();
-        if (dist < bestDist) {
+        if (dist < bestDist)
+        {
             bestDist = dist;
             bestLen = lenSoFar + QLineF(prev, curr).length();
         }
@@ -280,7 +285,8 @@ qreal ConflictGeometryCalculator::CubicSegment::distanceToPoint(const QPointF &p
  * @brief Intersects two line segments.
  * Uses QLineF for a robust intersection calculation.
  */
-std::vector<QPointF> ConflictGeometryCalculator::LineSegment::intersectWith(const LineSegment& other, qreal tol) const {
+std::vector<QPointF> ConflictGeometryCalculator::LineSegment::intersectWith(const LineSegment& other, qreal tol) const
+{
     std::vector<QPointF> intersections;
     QLineF line1(p0, p1);
     QLineF line2(other.p0, other.p1);
@@ -288,16 +294,10 @@ std::vector<QPointF> ConflictGeometryCalculator::LineSegment::intersectWith(cons
     QPointF intersectionPoint;
     // Use QLineF's intersection method which is robust.
     // We check for BoundedIntersection to ensure the intersection is within both segments.
-#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
-    if (line1.intersects(line2, &intersectionPoint) == QLineF::BoundedIntersection) {
+    if (line1.intersects(line2, &intersectionPoint) == QLineF::BoundedIntersection)
+    {
         intersections.push_back(intersectionPoint);
     }
-#else
-    // Fallback for older Qt versions
-    if (line1.intersect(line2, &intersectionPoint) == QLineF::BoundedIntersection) {
-        intersections.push_back(intersectionPoint);
-    }
-#endif
     Q_UNUSED(tol);
     return intersections;
 }
@@ -306,7 +306,8 @@ std::vector<QPointF> ConflictGeometryCalculator::LineSegment::intersectWith(cons
  * @brief Intersects a line with a quadratic Bezier curve.
  * This is handled by the QuadraticSegment's implementation.
  */
-std::vector<QPointF> ConflictGeometryCalculator::LineSegment::intersectWith(const QuadraticSegment& other, qreal tol) const {
+std::vector<QPointF> ConflictGeometryCalculator::LineSegment::intersectWith(const QuadraticSegment& other, qreal tol) const
+{
     return other.intersectWith(*this, tol);
 }
 
@@ -314,7 +315,8 @@ std::vector<QPointF> ConflictGeometryCalculator::LineSegment::intersectWith(cons
  * @brief Intersects a line with a cubic Bezier curve.
  * This is handled by the CubicSegment's implementation.
  */
-std::vector<QPointF> ConflictGeometryCalculator::LineSegment::intersectWith(const CubicSegment& other, qreal tol) const {
+std::vector<QPointF> ConflictGeometryCalculator::LineSegment::intersectWith(const CubicSegment& other, qreal tol) const
+{
     return other.intersectWith(*this, tol);
 }
 
@@ -326,7 +328,8 @@ std::vector<QPointF> ConflictGeometryCalculator::LineSegment::intersectWith(cons
  * @brief Intersects a quadratic Bezier curve with a line segment.
  * This involves solving a quadratic equation derived from the curve and line formulas.
  */
-std::vector<QPointF> ConflictGeometryCalculator::QuadraticSegment::intersectWith(const LineSegment& other, qreal tol) const {
+std::vector<QPointF> ConflictGeometryCalculator::QuadraticSegment::intersectWith(const LineSegment& other, qreal tol) const
+{
     std::vector<QPointF> intersections;
 
     // Bezier curve: B(t) = (1-t)^2*P0 + 2(1-t)t*C1 + t^2*P1
@@ -353,24 +356,32 @@ std::vector<QPointF> ConflictGeometryCalculator::QuadraticSegment::intersectWith
     qreal c = QPointF::dotProduct(C - other.p0, linePerp);
 
     // Solve the quadratic equation for t
-    if (std::abs(a) < 1e-9) { // It's actually a linear equation
-        if (std::abs(b) > 1e-9) {
+    if (std::abs(a) < 1e-9) // It's actually a linear equation
+    {
+        if (std::abs(b) > 1e-9)
+        {
             qreal t = -c / b;
-            if (t >= -tol && t <= 1.0 + tol) {
+            if (t >= -tol && t <= 1.0 + tol)
+            {
                 intersections.push_back(evaluateAt(std::clamp(t, 0.0, 1.0)));
             }
         }
-    } else {
+    }
+    else
+    {
         qreal discriminant = b * b - 4 * a * c;
-        if (discriminant >= 0) {
+        if (discriminant >= 0)
+        {
             qreal sqrt_d = std::sqrt(discriminant);
             qreal t1 = (-b + sqrt_d) / (2 * a);
             qreal t2 = (-b - sqrt_d) / (2 * a);
 
-            if (t1 >= -tol && t1 <= 1.0 + tol) {
+            if (t1 >= -tol && t1 <= 1.0 + tol)
+            {
                 intersections.push_back(evaluateAt(std::clamp(t1, 0.0, 1.0)));
             }
-            if (t2 >= -tol && t2 <= 1.0 + tol) {
+            if (t2 >= -tol && t2 <= 1.0 + tol)
+            {
                 intersections.push_back(evaluateAt(std::clamp(t2, 0.0, 1.0)));
             }
         }
@@ -379,17 +390,22 @@ std::vector<QPointF> ConflictGeometryCalculator::QuadraticSegment::intersectWith
     // Filter out points that are not on the line segment
     std::vector<QPointF> final_points;
     QLineF line(other.p0, other.p1);
-    for (const auto& p : intersections) {
+    for (const auto& p : intersections)
+    {
         // Project point onto the line to find its parameter 's'
         qreal dx = line.dx(), dy = line.dy();
         qreal s = 0.0;
-        if (std::abs(dx) > std::abs(dy)) {
+        if (std::abs(dx) > std::abs(dy))
+        {
             s = (p.x() - other.p0.x()) / dx;
-        } else if (std::abs(dy) > 1e-9) {
+        }
+        else if (std::abs(dy) > 1e-9)
+        {
             s = (p.y() - other.p0.y()) / dy;
         }
         // Check if the parameter 's' is within the line segment bounds [0, 1]
-        if (s >= -tol && s <= 1.0 + tol) {
+        if (s >= -tol && s <= 1.0 + tol)
+        {
             final_points.push_back(p);
         }
     }
@@ -400,7 +416,8 @@ std::vector<QPointF> ConflictGeometryCalculator::QuadraticSegment::intersectWith
 /**
  * @brief Intersects two quadratic Bezier curves by flattening them.
  */
-std::vector<QPointF> ConflictGeometryCalculator::QuadraticSegment::intersectWith(const QuadraticSegment& other, qreal tol) const {
+std::vector<QPointF> ConflictGeometryCalculator::QuadraticSegment::intersectWith(const QuadraticSegment& other, qreal tol) const
+{
     auto poly1 = flattenSegment(*this);
     auto poly2 = flattenSegment(other);
     return intersectPolylines(poly1, poly2, tol);
@@ -409,7 +426,8 @@ std::vector<QPointF> ConflictGeometryCalculator::QuadraticSegment::intersectWith
 /**
  * @brief Intersects a quadratic and a cubic Bezier curve by flattening them.
  */
-std::vector<QPointF> ConflictGeometryCalculator::QuadraticSegment::intersectWith(const CubicSegment& other, qreal tol) const {
+std::vector<QPointF> ConflictGeometryCalculator::QuadraticSegment::intersectWith(const CubicSegment& other, qreal tol) const
+{
     auto poly1 = flattenSegment(*this);
     auto poly2 = flattenSegment(other);
     return intersectPolylines(poly1, poly2, tol);
@@ -425,7 +443,8 @@ std::vector<QPointF> ConflictGeometryCalculator::QuadraticSegment::intersectWith
  * This is more complex, involving solving a cubic equation. For simplicity and
  * robustness, we'll use the flattening approach here as well.
  */
-std::vector<QPointF> ConflictGeometryCalculator::CubicSegment::intersectWith(const LineSegment& other, qreal tol) const {
+std::vector<QPointF> ConflictGeometryCalculator::CubicSegment::intersectWith(const LineSegment& other, qreal tol) const
+{
     // An analytical solution requires solving a cubic equation, which can be complex.
     // Flattening is a simpler and numerically stable approach that fits the project's style.
     auto poly1 = flattenSegment(*this, 100); // Use higher resolution for cubic
@@ -436,7 +455,8 @@ std::vector<QPointF> ConflictGeometryCalculator::CubicSegment::intersectWith(con
 /**
  * @brief Intersects a cubic and a quadratic Bezier curve by flattening them.
  */
-std::vector<QPointF> ConflictGeometryCalculator::CubicSegment::intersectWith(const QuadraticSegment& other, qreal tol) const {
+std::vector<QPointF> ConflictGeometryCalculator::CubicSegment::intersectWith(const QuadraticSegment& other, qreal tol) const
+{
     auto poly1 = flattenSegment(*this);
     auto poly2 = flattenSegment(other);
     return intersectPolylines(poly1, poly2, tol);
@@ -445,7 +465,8 @@ std::vector<QPointF> ConflictGeometryCalculator::CubicSegment::intersectWith(con
 /**
  * @brief Intersects two cubic Bezier curves by flattening them.
  */
-std::vector<QPointF> ConflictGeometryCalculator::CubicSegment::intersectWith(const CubicSegment& other, qreal tol) const {
+std::vector<QPointF> ConflictGeometryCalculator::CubicSegment::intersectWith(const CubicSegment& other, qreal tol) const
+{
     auto poly1 = flattenSegment(*this);
     auto poly2 = flattenSegment(other);
     return intersectPolylines(poly1, poly2, tol);

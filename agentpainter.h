@@ -15,25 +15,34 @@ class AgentPainter {
 public:
     virtual ~AgentPainter() = default;
 
-    /// Called once to create all necessary QGraphicsItems for an agent object
+    /// Creates all necessary QGraphicsItems for an agent object
     virtual void setup(const Agent* agent, QGraphicsScene* scene) = 0;
 
     /// Called every frame to render updated agent objects
     virtual void update(const Agent* agent) = 0;
 };
 
+/**
+ * @brief Holds graphics items of rendered angent objects
+ */
 struct VehicleRenderable
 {
     QGraphicsRectItem* vehicleBody = nullptr;
     QGraphicsTextItem* debugText = nullptr;
 };
 
+/**
+ * @brief Class for rendering vehicle objects
+ */
 class VehiclePainter : public AgentPainter {
 public:
     VehiclePainter(bool debugMode);
     ~VehiclePainter() override; // We need a destructor for cleanup
 
+    /// Creates all necessary QGraphicsItems for a vehicle object
     void setup(const Agent* agent, QGraphicsScene* scene) override;
+
+    /// Called every frame to render updated vehicle objects
     void update(const Agent* agent) override;
 
 private:

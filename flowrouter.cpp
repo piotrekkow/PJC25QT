@@ -33,8 +33,6 @@ const Roadway *FlowRouter::route(const Roadway *from) const
 
     const auto& flows = it->second;
 
-    // const auto& flows = roadwayFlows(from); // new line
-
     std::vector<int> weights;
     weights.reserve(flows.size());
     for (auto& f : flows)
@@ -61,16 +59,19 @@ void FlowRouter::validate() const
     {
         // 1. Check flows sum
         int totalFlow = 0;
-        for (auto& f : flows) {
+        for (auto& f : flows)
+        {
             totalFlow += f.flow;
 
             // 2. Check connectivity
-            if (!adjacency[fromRoad].count(f.roadway)) {
+            if (!adjacency[fromRoad].count(f.roadway))
+            {
                 qDebug() << "Router: no flow set from " << fromRoad << " to " << f.roadway << ".";
             }
         }
 
-        if (totalFlow <= 0) {
+        if (totalFlow <= 0)
+        {
             qDebug() << "Router: total flow is 0 from roadway" << fromRoad;
         }
     }

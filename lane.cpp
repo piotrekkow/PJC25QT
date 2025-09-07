@@ -5,7 +5,7 @@
 
 void Lane::addConnection(const Connection *connection)
 {
-    if (!connection) return;
+    if (!connection && connection->source() != this) return;
     connections_.emplace_back(connection);
 }
 

@@ -9,6 +9,8 @@ Intersection::Intersection(QPointF position, GeometryManager* geometry)
 
 void Intersection::addRoad(Road *road)
 {
+    if (!road->has(this))
+        throw std::invalid_argument("Tried to add road to intersection which doesn't lead or originate at intersection.");
     roads_.emplace_back(road);
 }
 

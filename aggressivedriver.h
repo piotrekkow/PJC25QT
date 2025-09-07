@@ -1,6 +1,9 @@
 #pragma once
 #include "drivermodel.h"
 
+/**
+ * @brief Changes some of base behavior to model a more aggressive driver
+ */
 class AggressiveDriver : public DriverModel
 {
 public:

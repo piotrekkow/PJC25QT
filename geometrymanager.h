@@ -34,13 +34,27 @@ class GeometryManager
 public:
     explicit GeometryManager(RoadNetwork* network);
 
-    // --- Public Getters ---
     // These methods return a const reference to the cached geometry.
     // If the geometry is not in the cache, they calculate it, store it, and then return it.
 
+    /**
+     * @return vector of points with normals used for building lane geometry
+     */
     const std::vector<OrientedPoint>& roadwayBaseline(const Roadway* roadway) const;
+
+    /**
+     * @return roadway geometry
+     */
     const QPainterPath& roadway(const Roadway* roadway) const;
+
+    /**
+     * @return lane geometry
+     */
     const QPainterPath& lane(const Lane* lane) const;
+
+    /**
+     * @return connection geometry
+     */
     const QPainterPath& connection(const Connection* connection) const;
 
     /**

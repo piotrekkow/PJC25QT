@@ -4,7 +4,6 @@
 /**
  * @brief PID Controller implementation.
  * Requires external output clamping.
- * Remember to reset before use.
  */
 class PIDController
 {

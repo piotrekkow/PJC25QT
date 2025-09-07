@@ -7,16 +7,31 @@
 class Lane;
 class RoadGeometry;
 
+/**
+ * @brief Stateless calculator for lane geometry. Lane geometry is entirely dependent on the geometry of the road, specifically a roadways baseline geometry.
+ */
 class LaneGeometryCalculator
 {
 public:
     // This class should not be instantiated
     LaneGeometryCalculator() = delete;
 
-    /// less expensive version that uses already calculated baseline roadwaygeometry
+    /**
+     * @brief less expensive version that uses already calculated baseline roadwaygeometry
+     * @param baselineRoadwayGeometry
+     * @param lane
+     * @param roadway
+     * @return lane path geometry with elements indicating center of lane
+     */
     static QPainterPath calculateGeometry(const std::vector<OrientedPoint>& baselineRoadwayGeometry, const Lane* lane, const Roadway* roadway);
 
-    /// more expensive version that calculates baseline roadwaygeometry each call
+    /**
+     * @brief more expensive version that calculates baseline roadwaygeometry each call
+     * @param roadGeometry
+     * @param lane
+     * @param roadway
+     * @return lane path geometry with elements indicating center of lane
+     */
     static QPainterPath calculateGeometry(const RoadGeometry& roadGeometry, const Lane* lane, const Roadway* roadway);
 
     static QPointF calculateStartPoint(const std::vector<OrientedPoint> &geometry, const Lane *lane, const Roadway *roadway);

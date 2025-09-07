@@ -97,7 +97,7 @@ const Connection *LaneNavigationStrategy::nextConnection() const
 {
     for (const auto& connection : lane_->nextConnections())
     {
-        if (connection->nextLane()->roadway() == designatedNextRoadway_)
+        if (connection->destination()->roadway() == designatedNextRoadway_)
             return connection;
     }
     return nullptr;
@@ -105,7 +105,7 @@ const Connection *LaneNavigationStrategy::nextConnection() const
 
 const Traversable *ConnectionNavigationStrategy::next() const
 {
-    return static_cast<const Traversable*>(connection_->nextLane());
+    return static_cast<const Traversable*>(connection_->destination());
 }
 
 qreal ConnectionNavigationStrategy::distanceToStopLine()

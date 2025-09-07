@@ -4,6 +4,9 @@
 #include <QGraphicsView>
 #include <QMouseEvent>
 
+/**
+ * @brief Adds graphics view panning functionality
+ */
 class GraphicsViewPannable : public QGraphicsView
 {
     Q_OBJECT

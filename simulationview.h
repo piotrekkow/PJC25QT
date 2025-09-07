@@ -3,6 +3,9 @@
 #include <QGraphicsView>
 #include <QMouseEvent>
 
+/**
+ * @brief Graphics view housing the simulation
+ */
 class SimulationView : public QGraphicsView
 {
     Q_OBJECT

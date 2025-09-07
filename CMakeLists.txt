@@ -62,7 +62,7 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
 
         connection.h connection.cpp
 
-        roadgeometrypoint.h roadgeometrypoint.cpp
+        roadgeometrypoint.h
         roadgeometry.h roadgeometry.cpp
         simulationview.h simulationview.cpp
         graphicsviewpannable.h graphicsviewpannable.cpp
@@ -87,11 +87,11 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
         agent.h agent.cpp
         pidcontroller.h pidcontroller.cpp
         flowrouter.h flowrouter.cpp
-        pedestrian.h pedestrian.cpp
+
         flowgenerator.h flowgenerator.cpp
         navigationstrategy.h navigationstrategy.cpp
         flowcontroller.h flowcontroller.cpp
-        alignedtextitem.h alignedtextitem.cpp
+
         agentpainter.h agentpainter.cpp
         trafficobserver.h
         drivermodel.h drivermodel.cpp

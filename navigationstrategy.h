@@ -14,6 +14,9 @@ class Connection;
 class ConflictPoint;
 class VehicleTraversable;
 
+/**
+ * @brief Provides strategy for navigating a traversable.
+ */
 class NavigationStrategy
 {
 protected:
@@ -31,12 +34,33 @@ public:
 
     virtual ~NavigationStrategy() = default;
     virtual const Traversable* next() const = 0;
+    /**
+     * @return distance to stop from start of traversable or a very large value if there are no objects agents on this trajectory have to give way to
+     */
     qreal distanceToStop();
 
 protected:
+    /**
+     * @return distance to stop line from the start of traversable
+     */
     virtual qreal distanceToStopLine() = 0;
+
+    /**
+     * @brief canSafelyProceed
+     * @param vector of conflict data provided by conflictsMustYieldTo
+     * @return
+     */
     virtual bool canSafelyProceed(const std::vector<ConflictData>& conflicts) = 0;
+
+    /**
+     * @brief chooses the right traversable and calculates conflicts which have to be resolved
+     * @return vector of conflict data calculated by FlowController
+     */
     virtual const std::vector<ConflictData> conflictsMustYieldTo() const = 0;
+
+    /**
+     * @return distance to stop line based on current traversable from the start of traversable
+     */
     virtual qreal calculateDistanceToStopLine() const = 0;
 };
 

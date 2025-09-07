@@ -10,6 +10,9 @@ class Lane;
 class ConflictData;
 class ConflictPoint;
 
+/**
+ * @brief Context around the vehicle containing all information driver needs to make decisions
+ */
 struct DecisionContext
 {
     const Vehicle* leadVehicle = nullptr;
@@ -23,6 +26,9 @@ struct DecisionContext
     const qreal maxJerk;
 };
 
+/**
+ * @brief Agenst which travel on lanes and connections
+ */
 class Vehicle : public Agent
 {
     qreal acceleration_;
@@ -41,7 +47,14 @@ public:
      */
     [[nodiscard]] static std::unique_ptr<Vehicle> create(Lane* initialLane, const Traffic* traffic, const GeometryManager *geometry);
 
+    /**
+     * @brief time to reach given distance based on average acceleration and speed values
+     */
     qreal timeToReach(qreal distance);
+
+    /**
+     * @return what the driver is currently doing
+     */
     DriverAction driverAction() const { return driver_->action(); }
 
     qreal acceleration() const { return acceleration_; } // ONLY FOR DEBUG

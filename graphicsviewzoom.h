@@ -3,6 +3,9 @@
 #include <QObject>
 #include <QGraphicsView>
 
+/**
+ * @brief Adds graphics view zooming functionality
+ */
 class GraphicsViewZoom : public QObject
 {
     Q_OBJECT

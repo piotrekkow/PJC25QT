@@ -62,3 +62,38 @@ std::unordered_map<const Roadway*, std::unordered_set<const Roadway*>> Intersect
 
     return adj;
 }
+
+void Intersection::createAllConnections()
+{
+    // Check if all roads valid for this function's prerequisites
+    for (const auto& road : roads_)
+    {
+        for (const auto& roadway : road->roadways())
+        {
+            if (roadway->lanes().size() != 1)
+                throw std::runtime_error("createAllConnections() function only valid for intersections where all roadways have one lane.");
+        }
+    }
+
+    // IN THE FUTURE FOR SAFETY: Remove any existing connecitons
+    // for (const auto& road : roads_)
+    // {
+    //     if (Roadway* roadway = road->roadwayInto(this))
+    //     {
+    //         for (const auto& lane : roadway->lanes())
+    //         {
+    //             const_cast<Lane*>(lane.get())->clearConnections();
+    //         }
+    //     }
+    // }
+
+    // Create all connections
+    for (const auto& inRoad : roads_)
+    {
+        for (const auto& outRoad : roads_)
+        {
+            if (inRoad != outRoad)
+                createConnection(inRoad, outRoad);
+        }
+    }
+}

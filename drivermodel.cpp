@@ -89,8 +89,8 @@ qreal DriverModel::followingAcceleration(const Vehicle *vehicle, DecisionContext
     // Using the Intelligent Driver Model (IDM) formula for safe distance
     qreal safeDistance = minDistanceGap_ + std::max(0.0, vehicle->speed() * minTimeGap_ + (vehicle->speed() * relativeSpeed) / (2 * std::sqrt(comfAccel_ * comfDecel_)));
     controller_.gains(1.0, 0.05, 0.2);
-    qreal setpoint = (relativeDistance > safeDistance) ? context.speedLimit
-                                                 : lead->speed();
+    qreal setpoint = (relativeDistance > safeDistance) ? lead->speed()
+                                                       : lead->speed() * 0.8;
 
     return controller_.update(setpoint, vehicle->speed(), deltaTime);
 }

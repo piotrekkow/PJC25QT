@@ -26,3 +26,6 @@ signals:
 public slots:
     void resetZoom();
 };
+
+
+

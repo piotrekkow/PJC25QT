@@ -56,3 +56,6 @@ public:
     /// Deduces agent type and creates a specific painter for given agent subclass
     std::unique_ptr<AgentPainter> createPainterFor(const Agent* agent, bool debugMode);
 };
+
+
+

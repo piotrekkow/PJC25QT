@@ -15,13 +15,16 @@ Intersection *RoadNetwork::createIntersection(QPointF position)
     return intersections_.back().get();
 }
 
-Road *RoadNetwork::createRoad(Intersection *startIntersection, Intersection *endIntersection)
+Road *RoadNetwork::createRoad(Intersection *startIntersection, Intersection *endIntersection, bool withBothRoadways)
 {
     roads_.emplace_back(std::make_unique<Road>(startIntersection, endIntersection, geometryManager_.get()));
     Road* newRoad{ roads_.back().get() };
 
     startIntersection->addRoad(newRoad);
     endIntersection->addRoad(newRoad);
+
+    if (withBothRoadways)
+        newRoad->createRoadways();
 
     return newRoad;
 }

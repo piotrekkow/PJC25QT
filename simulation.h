@@ -17,3 +17,4 @@ public:
     void initialize();
     void update(qreal deltaTime);
 };
+

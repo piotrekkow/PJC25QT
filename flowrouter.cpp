@@ -25,6 +25,28 @@ void FlowRouter::addRoadwayFlows(const Roadway *from, std::vector<RoadwayFlow> f
     routeFlows_.try_emplace(from, flowsTo);
 }
 
+void FlowRouter::addAllRoadwayFlows()
+{
+    if (!routeFlows_.empty()) return;
+
+    for (const auto& road : intersection_->roads())
+    {
+        if (auto inRoadway = road->roadwayInto(intersection_))
+        {
+            std::vector<RoadwayFlow> inRoadwayFlows;
+            for (const auto& roadOut : intersection_->roads())
+            {
+                if (road == roadOut) continue; // dont add u-turns
+                if (auto outRoadway = roadOut->roadwayOutOf(intersection_))
+                {
+                    inRoadwayFlows.push_back({outRoadway, 1});
+                }
+            }
+            routeFlows_.try_emplace(inRoadway, inRoadwayFlows);
+        }
+    }
+}
+
 const Roadway *FlowRouter::route(const Roadway *from) const
 {
     auto it = routeFlows_.find(from);
@@ -66,7 +88,7 @@ void FlowRouter::validate() const
             // 2. Check connectivity
             if (!adjacency[fromRoad].count(f.roadway))
             {
-                qDebug() << "Router: no flow set from " << fromRoad << " to " << f.roadway << ".";
+                qDebug() << "Router @" << intersection_->position().x() <<", " << intersection_->position().y() << ": no flow set from " << fromRoad << " to " << f.roadway << ".";
             }
         }
 

@@ -29,9 +29,10 @@ public:
      * @brief creates a road connecting 2 intersections
      * @param start 1st intersection
      * @param end 2nd intersection
+     * @param withBothRoadways should create the road with 2 roadways already in place
      * @return pointer to created road
      */
-    Road* createRoad(Intersection* start, Intersection* end);
+    Road* createRoad(Intersection* start, Intersection* end, bool withBothRoadways = true);
 
     /**
      * @return reference to vector of all intersections in network

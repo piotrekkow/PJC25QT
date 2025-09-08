@@ -29,7 +29,7 @@ class Renderer : public TrafficObserver
     QGraphicsItemGroup* staticLayer_;
     QGraphicsScene* scene_;
 
-    bool debugMode_{ true };
+    bool debugMode_{ false };
 
 public:
     Renderer(QGraphicsScene* scene);
@@ -57,3 +57,4 @@ private:
     QGraphicsItemGroup* createYieldSign() const;
     QGraphicsItemGroup* createPrioritySign() const;
 };
+

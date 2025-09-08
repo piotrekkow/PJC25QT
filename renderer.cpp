@@ -217,6 +217,14 @@ void Renderer::drawStaticElementsDebug(const RoadNetwork *network)
             pathItem->setPen(roadwayPen);
             staticLayer_->addToGroup(pathItem);
         }
+        for (const auto& rpoint : road->geometry().points())
+        {
+
+            QRectF rect(rpoint.position().x() - 2.0 / 2, rpoint.position().y() - 2.0 / 2, 2.0, 2.0);
+            auto ellipse = new QGraphicsEllipseItem(rect);
+            ellipse->setPen(QPen(Qt::blue));
+            staticLayer_->addToGroup(ellipse);
+        }
     }
 }
 

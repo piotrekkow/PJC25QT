@@ -20,19 +20,41 @@ void Simulation::initialize()
     auto is4 = network_->createIntersection({-50, -100});
     auto is5 = network_->createIntersection({-200, 50});
 
+    auto is21 = network_->createIntersection({100, 260});
+
+    auto is522 = network_->createIntersection({-220, 220}); // lower left corner
+
+    auto is51 = network_->createIntersection({-250, -50});
+    auto is53 = network_->createIntersection({-400, 60});
+
+    auto is5221 = network_->createIntersection({-430, 200});
+    auto is5222 = network_->createIntersection({-200, 400});
+
     auto r2 = network_->createRoad(is1, is2);   // bottom
     auto r3 = network_->createRoad(is1, is3);   // right
     auto r4 = network_->createRoad(is1, is4);   // top
-    auto r5 = network_->createRoad(is1, is5);   // left
+    network_->createRoad(is1, is5);   // left
 
-    r2->createRoadways();
-    r3->createRoadways();
-    r4->createRoadways();
-    r5->createRoadways();
+    auto r221 = network_->createRoad(is2, is21);
+    auto r2522 = network_->createRoad(is2, is522);
+
+    network_->createRoad(is5, is51);
+    auto r522 = network_->createRoad(is5, is522);
+    network_->createRoad(is5, is53);
+
+    network_->createRoad(is522, is5221);
+    auto r5222 = network_->createRoad(is522, is5222);
 
     r4->roadwayInto(is1)->priority(PriorityType::Priority);
     r2->roadwayInto(is1)->priority(PriorityType::Priority);
     r3->roadwayInto(is1)->priority(PriorityType::Stop);
+
+    r522->roadwayInto(is522)->priority(PriorityType::Priority);
+    r5222->roadwayInto(is522)->priority(PriorityType::Priority);
+
+    r2->roadwayInto(is2)->priority(PriorityType::Priority);
+    r2522->roadwayInto(is2)->priority(PriorityType::Priority);
+    r221->roadwayInto(is2)->priority(PriorityType::Stop);
 
     r3->geometry().addPoint({30, -6}, 1);
     r3->geometry().pointAt(0).medianWidth(4.0);
@@ -42,18 +64,10 @@ void Simulation::initialize()
     r3->geometry().addPoint({120, -42}, 4);
     r3->geometry().addPoint({140, -46}, 5);
 
-    is1->createConnection(r2, r3);
-    is1->createConnection(r2, r4);
-    is1->createConnection(r2, r5);
-    is1->createConnection(r3, r2)->destinationOffset(3.0);
-    is1->createConnection(r3, r4);
-    is1->createConnection(r3, r5);
-    is1->createConnection(r4, r2)->destinationOffset(1.0);
-    is1->createConnection(r4, r3);
-    is1->createConnection(r4, r5)->sourceOffset(1.0);
-    is1->createConnection(r5, r2);
-    is1->createConnection(r5, r3);
-    is1->createConnection(r5, r4);
+    is1->createAllConnections();
+    is5->createAllConnections();
+    is2->createAllConnections();
+    is522->createAllConnections();
 
     is1->conflictManager()->recalculate();
 
@@ -62,16 +76,18 @@ void Simulation::initialize()
     traffic_ = std::make_unique<Traffic>(network_.get());
     traffic_->addObserver(renderer_.get());
 
-    auto is1Router = traffic_->router(is1);
-    is1Router->addRoadwayFlows(r2->roadwayInto(is1), {{r3->roadwayOutOf(is1), 1}, {r4->roadwayOutOf(is1), 1}, {r5->roadwayOutOf(is1), 1}});
-    is1Router->addRoadwayFlows(r3->roadwayInto(is1), {{r2->roadwayOutOf(is1), 1}, {r4->roadwayOutOf(is1), 1}, {r5->roadwayOutOf(is1), 1}});
-    is1Router->addRoadwayFlows(r4->roadwayInto(is1), {{r2->roadwayOutOf(is1), 1}, {r3->roadwayOutOf(is1), 1}, {r5->roadwayOutOf(is1), 1}});
-    is1Router->addRoadwayFlows(r5->roadwayInto(is1), {{r2->roadwayOutOf(is1), 1}, {r3->roadwayOutOf(is1), 1}, {r4->roadwayOutOf(is1), 1}});
+    traffic_->router(is1)->addAllRoadwayFlows();
+    traffic_->router(is2)->addAllRoadwayFlows();
+    traffic_->router(is5)->addAllRoadwayFlows();
+    traffic_->router(is522)->addAllRoadwayFlows();
 
-    traffic_->generator(is2)->flow(200.0);
+    traffic_->generator(is21)->flow(200.0);
+    traffic_->generator(is5221)->flow(150.0);
     traffic_->generator(is3)->flow(200.0);
     traffic_->generator(is4)->flow(150.0);
-    traffic_->generator(is5)->flow(200.0);
+    traffic_->generator(is51)->flow(200.0);
+    traffic_->generator(is5222)->flow(100.0);
+    traffic_->generator(is53)->flow(200.0);
 
     traffic_->validate();
 

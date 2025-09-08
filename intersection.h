@@ -67,5 +67,7 @@ public:
      * @return map of outgoing roadways connected to an incoming roadway.
      */
     std::unordered_map<const Roadway*, std::unordered_set<const Roadway*>> roadwayAdjacency() const;
+
+    void createAllConnections();
 };
 

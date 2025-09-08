@@ -25,7 +25,7 @@ protected:
     const GeometryManager* geometry_;
 
 
-    const qreal minTimeGap_{ 2.0 }; // s
+    const qreal minTimeGap_{ 3.0 }; // s
     const qreal minDistanceGap_{ 1.5 }; // m
 
 public:

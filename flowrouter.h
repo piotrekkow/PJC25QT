@@ -32,6 +32,11 @@ public:
     void addRoadwayFlows(const Roadway* from, std::vector<RoadwayFlow> flowsTo);
 
     /**
+     * @brief adds all possible roadway flows, distributed evenly
+     */
+    void addAllRoadwayFlows();
+
+    /**
      * @brief called once to return a random destination
      * @param from provided roadway
      * @return roadway to which the flow from provided roadway should be routed
